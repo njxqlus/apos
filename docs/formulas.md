@@ -32,6 +32,15 @@ Defines CPU utilization as a dimensionless ratio between 0 and 1, incorporating 
 **Formula:**
 $$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(R)}{\text{Frequency}}$$
 
+### Efficiency Degradation Function Definition
+To model the non-linear overhead of OS task scheduling and context switching, $\eta(R)$ is defined as:
+$$\eta(R) = 1 + \sigma \cdot \ln(R + 1)$$
+
+Where:
+- $1$: Represents the base efficiency (100% efficiency at zero/low load).
+- $\sigma$: The "System Friction" coefficient (dimensionless), representing how much the OS struggles with concurrency for a specific protocol.
+- $\ln(R + 1)$: The natural logarithm of the request rate, ensuring degradation starts logically and scales realistically without breaking at $R=0$.
+
 **Saturation Ceiling:**
 $$\rho = \min(1.0, \rho_{calc})$$
 
@@ -87,6 +96,7 @@ $$L = D_{prop} + D_{proc} + D_{queue}$$
 | $k_{ser}$ | cycles/byte | Processing complexity required to serialize and deserialize structured data. |
 | $k_{net}$ | cycles/req | Base computational cost of packet processing, system calls, and interrupts. |
 | $\eta(R)$ | dimensionless | Efficiency degradation function modeling context-switching and contention. |
+| $\sigma$ | dimensionless | The "System Friction" coefficient modeling OS struggle with concurrency. |
 | $\text{Frequency}$ | cycles/s | Processor clock frequency driving the instruction execution rate. |
 | $M$ | bytes | Total memory footprint to maintain communication state and buffers. |
 | $B_{base}$ | bytes | Static memory allocation required for the protocol stack instance. |
