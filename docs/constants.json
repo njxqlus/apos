@@ -1,0 +1,29 @@
+{
+  "profiles": {
+    "REST (JSON/HTTP1.1)": {
+      "H": 500,
+      "k_ser": 1.2,
+      "k_net": 5000,
+      "O_net": 1200,
+      "O_cpu": 150000,
+      "sigma": 0.08,
+      "tau": 1.5,
+      "Cs": 1.2
+    },
+    "gRPC (Protobuf/HTTP2)": {
+      "H": 20,
+      "k_ser": 0.2,
+      "k_net": 2000,
+      "O_net": 1500,
+      "O_cpu": 250000,
+      "sigma": 0.02,
+      "tau": 1.1,
+      "Cs": 1.0
+    }
+  },
+  "environment_constants": {
+    "Frequency": 3000000000,
+    "B_base": 50000000,
+    "Ca": 1.0
+  }
+}
