@@ -26,20 +26,20 @@ Defines CPU utilization as a dimensionless ratio between 0 and 1, incorporating 
 - $k_{net}$: Cost of packet handling/interrupts (cycles/request).
 - $O_{cpu}$: Connection establishment computational overhead (cycles for handshakes/TLS).
 - $R_{new\_conn}$: Rate of new connection establishment.
-- $\eta(R)$: Efficiency Degradation Function, modeling context-switching and contention.
+- $\eta(N_{active})$: Efficiency Degradation Function, modeling context-switching and contention.
 - $\text{Frequency}$: Processor clock frequency (cycles/s).
 
 **Formula:**
-$$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(R)}{\text{Frequency}}$$
+$$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(N_{active})}{\text{Frequency}}$$
 
 ### Efficiency Degradation Function Definition
-To model the non-linear overhead of OS task scheduling and context switching, $\eta(R)$ is defined as:
-$$\eta(R) = 1 + \sigma \cdot \ln(R + 1)$$
+To model the non-linear overhead of OS task scheduling and context switching, $\eta$ is defined as a function of concurrent active requests ($N_{active}$) rather than arrival rate:
+$$\eta(N_{active}) = 1 + \sigma \cdot \ln(N_{active} + 1)$$
 
 Where:
 - $1$: Represents the base efficiency (100% efficiency at zero/low load).
 - $\sigma$: The "System Friction" coefficient (dimensionless), representing how much the OS struggles with concurrency for a specific protocol.
-- $\ln(R + 1)$: The natural logarithm of the request rate, ensuring degradation starts logically and scales realistically without breaking at $R=0$.
+- $\ln(N_{active} + 1)$: The natural logarithm of the active concurrency, ensuring degradation starts logically and scales realistically without breaking at $N_{active}=0$.
 
 **Saturation Ceiling:**
 $$\rho = \min(1.0, \rho_{calc})$$
@@ -77,6 +77,8 @@ Defines the total time elapsed from request initiation to completion, modeled as
 **Kingman's Formula for Queueing Delay:**
 $$D_{queue} = \left( \frac{\rho}{1 - \rho} \right) \left( \frac{C_a^2 + C_s^2}{2} \right) D_{proc}$$
 
+*Note: Kingman's formula is valid for $0 \le \rho < 1$. If $\rho \ge 1$, the system is in a state of total saturation and $D_{queue}$ approaches infinity.*
+
 **Formula:**
 $$L = D_{prop} + D_{proc} + D_{queue}$$
 
@@ -95,7 +97,7 @@ $$L = D_{prop} + D_{proc} + D_{queue}$$
 | $\rho$ | dimensionless | Dimensionless CPU utilization ratio (0.0 to 1.0). |
 | $k_{ser}$ | cycles/byte | Processing complexity required to serialize and deserialize structured data. |
 | $k_{net}$ | cycles/req | Base computational cost of packet processing, system calls, and interrupts. |
-| $\eta(R)$ | dimensionless | Efficiency degradation function modeling context-switching and contention. |
+| $\eta(N_{active})$ | dimensionless | Efficiency degradation function modeling context-switching and contention as a function of active concurrency ($N_{active}$). |
 | $\sigma$ | dimensionless | The "System Friction" coefficient modeling OS struggle with concurrency. |
 | $\text{Frequency}$ | cycles/s | Processor clock frequency driving the instruction execution rate. |
 | $M$ | bytes | Total memory footprint to maintain communication state and buffers. |
