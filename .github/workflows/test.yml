@@ -25,9 +25,9 @@ jobs:
           bun-version: latest
 
       - name: Install Dependencies
-        working-directory: ./platform
+        working-directory: ./next
         run: bun install --frozen-lockfile
 
       - name: Run Checks
-        working-directory: ./platform
+        working-directory: ./next
         run: bun run check
