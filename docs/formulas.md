@@ -14,7 +14,7 @@ Defines the total bits transferred per second, accounting for active payload tra
 - $O_{net}$: Connection establishment network overhead (handshakes/TLS negotiation in bytes).
 
 **Formula:**
-$$T = R \times (H + S) + (R_{new\_conn} \times O_{net})$$
+$$T = 8 \times [R \times (H + S) + (R_{new\_conn} \times O_{net})]$$
 
 ## 2. CPU Utilization ($\rho$)
 
