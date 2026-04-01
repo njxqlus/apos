@@ -28,9 +28,11 @@ Defines CPU utilization as a dimensionless ratio between 0 and 1, incorporating 
 - $R_{new\_conn}$: Rate of new connection establishment.
 - $\eta(N_{active})$: Efficiency Degradation Function, modeling context-switching and contention.
 - $\text{Frequency}$: Processor clock frequency (cycles/s).
+- $N_{cores}$: Number of available CPU cores.
+- $\text{scales\_with\_cores}$: Boolean flag (1 or 0) indicating if the runtime scales with cores.
 
 **Formula:**
-$$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(N_{active})}{\text{Frequency}}$$
+$$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(N_{active})}{\text{Frequency} \times (\text{scales\_with\_cores} ? N_{cores} : 1)}$$
 
 ### Efficiency Degradation Function Definition
 To model the non-linear overhead of OS task scheduling and context switching, $\eta$ is defined as a function of concurrent active requests ($N_{active}$) rather than arrival rate:
@@ -100,6 +102,8 @@ $$L = D_{prop} + D_{proc} + D_{queue}$$
 | $\eta(N_{active})$ | dimensionless | Efficiency degradation function modeling context-switching and contention as a function of active concurrency ($N_{active}$). |
 | $\sigma$ | dimensionless | The "System Friction" coefficient modeling OS struggle with concurrency. |
 | $\text{Frequency}$ | cycles/s | Processor clock frequency driving the instruction execution rate. |
+| $N_{cores}$ | dimensionless | Number of available physical/logical CPU cores. |
+| $\text{scales\_with\_cores}$ | boolean | Flag indicating if the runtime profile utilizes multiple cores. |
 | $M$ | bytes | Total memory footprint to maintain communication state and buffers. |
 | $B_{base}$ | bytes | Static memory allocation required for the protocol stack instance. |
 | $B_{req}$ | bytes | Transient buffer memory required to process a single request. |
