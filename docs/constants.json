@@ -16,6 +16,7 @@
       "k_net": 2000,
       "O_net": 1500,
       "O_cpu": 250000,
+      "_O_cpu_comment": "this includes TLS, HTTP/2 HPACK dynamic table initialization, and binary framing setup.",
       "sigma": 0.02,
       "tau": 1.1,
       "Cs": 1.0

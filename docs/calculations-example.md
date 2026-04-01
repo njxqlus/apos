@@ -7,7 +7,7 @@ This document provides a high-density technical walkthrough of the APOS mathemat
 The following parameters define the operational scenario and the underlying system environment:
 
 - $S = 1024$ (Payload Size, bytes)
-- $R = 2000$ (Request Rate, $s^{-1}$)
+- $R = 10000$ (Request Rate, $s^{-1}$)
 - $R_{new\_conn} = 100$ (Connection Rate, $s^{-1}$)
 - $D_{prop} = 0.05$ (Propagation Delay, seconds)
 
@@ -36,11 +36,11 @@ $$T = 8 \times [R \times (H + S) + (R_{new\_conn} \times O_{net})]$$
 
 Substituting the defined parameters:
 
-$$T = 8 \times [2000 \times (500 + 1024) + (100 \times 1200)]$$
-$$T = 8 \times [2000 \times 1524 + 120000]$$
-$$T = 8 \times [3048000 + 120000]$$
-$$T = 8 \times 3168000$$
-$$T = 25,344,000 \text{ bits/s}$$
+$$T = 8 \times [10000 \times (500 + 1024) + (100 \times 1200)]$$
+$$T = 8 \times [10000 \times 1524 + 120000]$$
+$$T = 8 \times [15240000 + 120000]$$
+$$T = 8 \times 15360000$$
+$$T = 122,880,000 \text{ bits/s}$$
 
 ---
 
@@ -64,23 +64,25 @@ $$D_{proc} \approx 2.07627 \times 10^{-6} \text{ seconds}$$
 System CPU utilization incorporates baseline processing costs and nonlinear concurrency degradation. Evaluating this metric introduces a circular dependency involving Active Concurrency ($N_{active}$), Queueing Delay ($D_{queue}$), and System Utilization ($\rho$). To rigorously break this circularity, we establish an initial bound for $N_{active}$ based exclusively on propagation delay, $N_{active} \approx R \times D_{prop}$, acknowledging that queueing delays under low saturation are negligible.
 
 **Initial Concurrency Estimate:**
-$$N_{active} \approx 2000 \times 0.05 = 100$$
+$$N_{active} \approx 10000 \times 0.05 = 500$$
 
 **Efficiency Degradation Function ($\eta$):**
-$$\eta(100) = 1 + \sigma \cdot \ln(N_{active} + 1)$$
-$$\eta(100) = 1 + 0.08 \times \ln(101)$$
-$$\eta(100) = 1 + 0.08 \times 4.61512$$
-$$\eta(100) = 1 + 0.36921 = 1.36921$$
+$$\eta(500) = 1 + \sigma \cdot \ln(N_{active} + 1)$$
+$$\eta(500) = 1 + 0.08 \times \ln(501)$$
+$$\eta(500) = 1 + 0.08 \times 6.2166$$
+$$\eta(500) = 1 + 0.49733 = 1.49733$$
 
 **Baseline CPU Utilization Calculation:**
-$$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(100)}{\text{Frequency}}$$
-$$\rho_{calc} = \frac{[2000 \times 6228.8 + (100 \times 150000)] \times 1.36921}{3 \times 10^9}$$
-$$\rho_{calc} = \frac{[12457600 + 15000000] \times 1.36921}{3 \times 10^9}$$
-$$\rho_{calc} = \frac{27457600 \times 1.36921}{3 \times 10^9}$$
-$$\rho_{calc} = \frac{37595209.696}{3 \times 10^9} \approx 0.01253$$
+$$\rho_{calc} = \frac{[R \times ((S \times k_{ser}) + k_{net}) + (R_{new\_conn} \times O_{cpu})] \times \eta(500)}{\text{Frequency}}$$
+$$\rho_{calc} = \frac{[10000 \times 6228.8 + (100 \times 150000)] \times 1.49733}{3 \times 10^9}$$
+$$\rho_{calc} = \frac{[62288000 + 15000000] \times 1.49733}{3 \times 10^9}$$
+$$\rho_{calc} = \frac{77288000 \times 1.49733}{3 \times 10^9}$$
+$$\rho_{calc} = \frac{115725642.64}{3 \times 10^9} \approx 0.03858$$
 
 Applying the saturation ceiling:
-$$\rho = \min(1.0, 0.01253) = 0.01253$$
+$$\rho = \min(1.0, 0.03858) = 0.03858$$
+
+*(Note: While CPU utilization has increased significantly due to the $5\times$ scale in request rate, the value remains structurally distant from the 1.0 Saturation Ceiling.)*
 
 ---
 
@@ -92,15 +94,15 @@ Total latency is modeled as the summation of propagation, processing, and queuei
 $$D_{queue} = \left( \frac{\rho}{1 - \rho} \right) \left( \frac{C_a^2 + C_s^2}{2} \right) D_{proc}$$
 
 Substituting the required parameters:
-$$D_{queue} = \left( \frac{0.01253}{1 - 0.01253} \right) \left( \frac{1.0^2 + 1.2^2}{2} \right) (2.07627 \times 10^{-6})$$
-$$D_{queue} = \left( \frac{0.01253}{0.98747} \right) \left( \frac{1.0 + 1.44}{2} \right) (2.07627 \times 10^{-6})$$
-$$D_{queue} = (0.01269) \times (1.22) \times (2.07627 \times 10^{-6})$$
-$$D_{queue} \approx 3.214 \times 10^{-8} \text{ seconds}$$
+$$D_{queue} = \left( \frac{0.03858}{1 - 0.03858} \right) \left( \frac{1.0^2 + 1.2^2}{2} \right) (2.07627 \times 10^{-6})$$
+$$D_{queue} = \left( \frac{0.03858}{0.96142} \right) \left( \frac{1.0 + 1.44}{2} \right) (2.07627 \times 10^{-6})$$
+$$D_{queue} = (0.04013) \times (1.22) \times (2.07627 \times 10^{-6})$$
+$$D_{queue} \approx 1.016 \times 10^{-7} \text{ seconds}$$
 
 **Total Latency:**
 $$L = D_{prop} + D_{proc} + D_{queue}$$
-$$L = 0.05 + (2.07627 \times 10^{-6}) + (3.214 \times 10^{-8})$$
-$$L \approx 0.0500021 \text{ seconds}$$
+$$L = 0.05 + (2.07627 \times 10^{-6}) + (1.016 \times 10^{-7})$$
+$$L \approx 0.0500022 \text{ seconds}$$
 
 ---
 
@@ -109,10 +111,10 @@ $$L \approx 0.0500021 \text{ seconds}$$
 Deriving the formal Active Concurrency utilizes Little's Law, representing the precise volume of persistent state managed by the system simultaneously.
 
 $$N_{active} = R \times L$$
-$$N_{active} = 2000 \times 0.0500021$$
-$$N_{active} \approx 100.0042$$
+$$N_{active} = 10000 \times 0.0500022$$
+$$N_{active} \approx 500.022$$
 
-*(Note: Recalculating $\eta(100.0042)$ yields nominal variance, confirming iterative convergence.)*
+*(Note: Recalculating $\eta(500.022)$ yields nominal variance, confirming iterative convergence under the new scaling limits.)*
 
 ---
 
@@ -123,7 +125,7 @@ Memory consumption defines the collective allocation footprint required for prot
 $$M = B_{base} + (N_{active} \times B_{req} \times \tau) + (N_{conn} \times \text{StateSize})$$
 
 Substituting the established metrics:
-$$M = 50,000,000 + (100.0042 \times B_{req} \times 1.5) + (N_{conn} \times \text{StateSize})$$
-$$M = 50,000,000 + (150.0063 \times B_{req}) + (N_{conn} \times \text{StateSize})$$
+$$M = 50,000,000 + (500.022 \times B_{req} \times 1.5) + (N_{conn} \times \text{StateSize})$$
+$$M = 50,000,000 + (750.033 \times B_{req}) + (N_{conn} \times \text{StateSize})$$
 
 This formalized expression constitutes the analytical model for memory scaling behavior under the specified load constraints.
