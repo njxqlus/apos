@@ -22,6 +22,10 @@ To format and lint files you SHOULD use bun run fix. Under the hood, this comman
 
 This project doesn't use any testing framework, so you SHOULD NOT write any tests.
 
+## Types
+
+You SHOULD run `bun typecheck` to check for type errors. You SHOULD NOT suppress type errors where possible and reasonable.
+
 ## Commits
 
 You SHOULD always use conventional commits.
