@@ -266,15 +266,17 @@ export default function Home() {
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
       <div className="absolute top-6 right-6 z-10">
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group"
-            >
-              <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-              {i18n.language.toUpperCase()}
-            </Button>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group"
+              />
+            }
+          >
+            <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+            {i18n.language.toUpperCase()}
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
