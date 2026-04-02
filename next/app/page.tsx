@@ -19,6 +19,7 @@ import {
   Clipboard,
   Check,
   Languages,
+  Star,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Disclaimer } from "@/components/Disclaimer";
@@ -671,6 +672,38 @@ export default function Home() {
         </CardContent>
         <div className="absolute -bottom-px left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent opacity-50" />
       </Card>
+      {/* Footer */}
+      <footer className="mt-12 mb-8 text-center space-y-4">
+        <div className="flex flex-col items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">
+          <div className="flex items-center gap-2">
+            <span>{t("footer.useful")}</span>
+            <a
+              href="https://github.com/njxqlus/apos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary/70 hover:text-primary transition-colors flex items-center gap-1.5 group"
+            >
+              <span className="border-b border-primary/20 group-hover:border-primary/50 transition-colors">
+                {t("footer.star")}
+              </span>
+              <Star className="w-3 h-3 transition-transform group-hover:scale-125 fill-current" />
+            </a>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>{t("footer.check")}</span>
+            <a
+              href="https://testtrain.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary/70 hover:text-primary transition-colors font-black tracking-tight"
+            >
+              <span className="border-b border-primary/20 hover:border-primary/50 transition-colors">
+                {t("footer.testtrain")}
+              </span>
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

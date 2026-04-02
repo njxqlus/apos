@@ -105,6 +105,12 @@ const resources = {
             "The average processor load across all allocated cores. Maintaining utilization below 70-80% is recommended to prevent 'tail latency' spikes where queuing delays cause unpredictable slow responses.",
         },
       },
+      footer: {
+        useful: "Find Useful?",
+        star: "Give a star on github",
+        check: "Check out real-time testops platform",
+        testtrain: "TestTrain",
+      },
     },
   },
   es: {
@@ -209,6 +215,12 @@ const resources = {
             "La carga promedio del procesador en todos los núcleos asignados. Se recomienda mantener el uso por debajo del 70-80% para evitar picos de 'latencia de cola' donde los retrasos de cola causan respuestas lentas impredecibles.",
         },
       },
+      footer: {
+        useful: "¿Te resultó útil?",
+        star: "Danos una estrella en github",
+        check: "Prueba la plataforma TestOps en tiempo real",
+        testtrain: "TestTrain",
+      },
     },
   },
   ru: {
@@ -312,6 +324,12 @@ const resources = {
           description:
             "Средняя нагрузка процессора на все выделенные ядра. Рекомендуется поддерживать загрузку ниже 70-80% для предотвращения всплесков 'хвостовой задержки', когда задержки в очередях вызывают непредсказуемо медленные ответы.",
         },
+      },
+      footer: {
+        useful: "Полезно?",
+        star: "Поставьте звезду на GitHub",
+        check: "Попробуйте TestOps-платформу реального времени",
+        testtrain: "TestTrain",
       },
     },
   },
