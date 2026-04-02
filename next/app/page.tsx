@@ -6,7 +6,15 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
+import {
+  Settings2,
+  Activity,
+  Zap,
+  Cpu,
+  HardDrive,
+  BarChart3,
+} from "lucide-react";
+import { PROTOCOL_CONFIGS, calculateMetrics, Protocol } from "@/lib/calc";
 
 const RPS_PRESETS = [
   { label: "100", value: 100 },
@@ -59,14 +67,20 @@ export default function Home() {
       setter(Math.min(max, Math.max(min, val)));
     };
 
+  const results = React.useMemo(() => {
+    return Object.keys(PROTOCOL_CONFIGS).map((p) => {
+      const protocol = p as Protocol;
+      return {
+        protocol,
+        metrics: calculateMetrics(protocol, rps, payloadSize),
+      };
+    });
+  }, [rps, payloadSize]);
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/20 rounded-full blur-3xl opacity-30 animate-pulse" />
-      <div className="absolute bottom-0 -right-4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20" />
-
-      <Card className="relative w-full max-w-3xl border-border/50 bg-card/50 shadow-2xl backdrop-blur-xl transition-all hover:border-primary/50">
-        <CardHeader className="pb-4">
+      <Card className="relative w-full max-w-6xl border-border/50 bg-card/50 shadow-2xl transition-all hover:border-primary/50">
+        <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Settings2 className="w-5 h-5 text-primary" />
@@ -77,18 +91,18 @@ export default function Home() {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-12 py-8">
+        <CardContent className="space-y-8 py-5">
           {/* RPS Parameter */}
-          <div className="group space-y-6">
+          <div className="group space-y-4">
             <div className="flex items-end justify-between">
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label
                   htmlFor="rps"
                   className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors"
                 >
                   Throughput (RPS)
                 </Label>
-                <div className="text-2xl font-bold tracking-tighter text-foreground tabular-nums">
+                <div className="text-lg font-bold tracking-tighter text-foreground tabular-nums">
                   {rps.toLocaleString()}
                 </div>
               </div>
@@ -132,7 +146,7 @@ export default function Home() {
                 step={1}
                 className="cursor-pointer"
               />
-              <div className="mt-4 flex justify-between px-0.5 text-[9px] text-muted-foreground/50 font-mono font-bold uppercase tracking-widest">
+              <div className="mt-2 flex justify-between px-0.5 text-[9px] text-muted-foreground/50 font-mono font-bold uppercase tracking-widest">
                 <span>Min: 1</span>
                 <span className="text-primary opacity-80">RPS SCALE</span>
                 <span>Max: 500K</span>
@@ -141,16 +155,16 @@ export default function Home() {
           </div>
 
           {/* Payload Size Parameter */}
-          <div className="group space-y-6">
+          <div className="group space-y-4">
             <div className="flex items-end justify-between">
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label
                   htmlFor="payload"
                   className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors"
                 >
                   Payload Size
                 </Label>
-                <div className="text-2xl font-bold tracking-tighter text-foreground tabular-nums">
+                <div className="text-lg font-bold tracking-tighter text-foreground tabular-nums">
                   {payloadSize < 1024
                     ? `${payloadSize} B`
                     : payloadSize < 1048576
@@ -200,7 +214,7 @@ export default function Home() {
                 step={1}
                 className="cursor-pointer"
               />
-              <div className="mt-4 flex justify-between px-0.5 text-[9px] text-muted-foreground/50 font-mono font-bold uppercase tracking-widest">
+              <div className="mt-2 flex justify-between px-0.5 text-[9px] text-muted-foreground/50 font-mono font-bold uppercase tracking-widest">
                 <span>Min: 1 B</span>
                 <span className="text-primary opacity-80">Payload Scale</span>
                 <span>Max: 1 MB</span>
@@ -209,6 +223,125 @@ export default function Home() {
           </div>
         </CardContent>
 
+        <div className="absolute -bottom-px left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+      </Card>
+
+      {/* Results Section */}
+      <Card className="relative w-full max-w-6xl mt-8 border-border/50 bg-card/50 shadow-2xl backdrop-blur-xl transition-all hover:border-primary/50">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Zap className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle className="text-xl font-semibold tracking-tight uppercase">
+              Infrastructure Estimation
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="py-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border/40">
+                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Protocol
+                  </th>
+                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <BarChart3 className="w-3 h-3" />
+                      Bandwidth
+                    </div>
+                  </th>
+                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Cpu className="w-3 h-3" />
+                      CPU Cores
+                    </div>
+                  </th>
+                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <HardDrive className="w-3 h-3" />
+                      RAM
+                    </div>
+                  </th>
+                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Activity className="w-3 h-3" />
+                      Latency
+                    </div>
+                  </th>
+                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Activity className="w-3 h-3" />
+                      CPU Util
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/20">
+                {results.map((res) => (
+                  <tr
+                    key={res.protocol}
+                    className="group hover:bg-primary/5 transition-colors"
+                  >
+                    <td className="py-4 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                      {res.protocol}
+                    </td>
+                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                      {res.metrics.bandwidthMbps.toLocaleString()}
+                      <span className="ml-1 text-[10px] text-muted-foreground uppercase">
+                        Mbps
+                      </span>
+                    </td>
+                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                      {res.metrics.cpuCores}
+                      <span className="ml-1 text-[10px] text-muted-foreground uppercase">
+                        vCPU
+                      </span>
+                    </td>
+                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                      {res.metrics.ramMb < 1024
+                        ? `${res.metrics.ramMb} MB`
+                        : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`}
+                    </td>
+                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                      <span
+                        className={`${
+                          res.metrics.latencyMs > 50
+                            ? "text-orange-500"
+                            : "text-foreground/80"
+                        }`}
+                      >
+                        {res.metrics.latencyMs}
+                      </span>
+                      <span className="ml-1 text-[10px] text-muted-foreground uppercase">
+                        ms
+                      </span>
+                    </td>
+                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="w-12 h-1 bg-muted/30 rounded-full overflow-hidden hidden sm:block">
+                          <div
+                            className="h-full bg-primary transition-all"
+                            style={{
+                              width: `${res.metrics.utilization * 100}%`,
+                            }}
+                          />
+                        </div>
+                        <span>
+                          {(res.metrics.utilization * 100)
+                            .toFixed(0)
+                            .padStart(2, "\u00A0")}
+                          %
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
         <div className="absolute -bottom-px left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent opacity-50" />
       </Card>
     </div>
