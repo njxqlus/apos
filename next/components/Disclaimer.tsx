@@ -9,7 +9,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+import { useTranslation, Trans } from "react-i18next";
+
 export function Disclaimer() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
@@ -27,7 +30,7 @@ export function Disclaimer() {
               <Info className="w-4 h-4" />
             </div>
             <span className="text-xs font-bold uppercase tracking-wider text-foreground/80">
-              What this calculator estimates
+              {t("disclaimer.title")}
             </span>
           </div>
           <ChevronDown
@@ -42,74 +45,62 @@ export function Disclaimer() {
         <CollapsibleContent>
           <CardContent className="pt-0 pb-6 px-6 font-mono text-[11px] leading-relaxed text-muted-foreground/80 space-y-6 border-t border-border/10 mt-2">
             <p className="pt-4">
-              This tool models server-side resource consumption for a single
-              receiving node processing incoming requests over a secure (TLS)
-              connection. It estimates the load on the{" "}
-              <strong className="text-foreground">consumer/receiver</strong> —
-              the application server that accepts requests, processes them, and
-              writes to fast storage (e.g. Redis, in-memory cache).
+              <Trans
+                i18nKey="disclaimer.intro"
+                components={[
+                  <br key="0" />,
+                  <strong key="1" className="text-foreground" />,
+                ]}
+              />
             </p>
 
             <div className="space-y-2">
               <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/80">
-                What is included in the model:
+                {t("disclaimer.included_title")}
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4 marker:text-primary/50 text-[10px]">
-                <li>
-                  Network bandwidth based on payload + protocol overhead + TLS
-                  framing
-                </li>
-                <li>
-                  CPU cores based on protocol efficiency, framework tier, and
-                  payload size penalty
-                </li>
-                <li>
-                  RAM based on concurrency (Little&apos;s Law) + per-request
-                  buffers + framework baseline
-                </li>
-                <li>
-                  Latency based on RTT + TLS handshake + protocol processing +
-                  framework overhead
-                </li>
-                <li>Utilization-based latency growth at high load</li>
+                {(
+                  t("disclaimer.included_items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
 
             <div className="space-y-2">
               <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/80">
-                What is NOT modeled:
+                {t("disclaimer.not_included_title")}
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4 marker:text-primary/50 text-[10px]">
-                <li>Database or downstream service latency</li>
-                <li>Horizontal scaling across multiple nodes</li>
-                <li>
-                  Broker-side resources for Kafka/AMQP (only the consumer client
-                  is modeled)
-                </li>
-                <li>
-                  Network infrastructure (load balancers, proxies, firewalls)
-                </li>
-                <li>GC pauses, JVM warmup, or runtime-specific behavior</li>
-                <li>Disk I/O</li>
-                <li>Burst traffic and autoscaling behavior</li>
+                {(
+                  t("disclaimer.not_included_items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
 
             <p className="text-[10px]">
-              <strong className="text-foreground italic">Accuracy:</strong>{" "}
-              estimates are within ±15–20% for typical workloads (1KB–10KB
-              payload, up to 100k RPS). Accuracy degrades at extreme
-              combinations of high RPS and large payloads (100k RPS × 100KB+)
-              where memory bandwidth becomes the bottleneck and the model may
-              overestimate CPU requirements.
+              <Trans
+                i18nKey="disclaimer.accuracy"
+                components={[
+                  <strong key="0" className="text-foreground italic" />,
+                ]}
+              />
             </p>
 
             <p className="text-[10px]">
-              <strong className="text-foreground italic">
-                Use this tool for:
-              </strong>{" "}
-              initial capacity planning, architecture trade-off comparisons, and
-              protocol selection. Do not use as a substitute for load testing.
+              <Trans
+                i18nKey="disclaimer.use_case"
+                components={[
+                  <strong key="0" className="text-foreground italic" />,
+                  <strong key="1" className="text-foreground italic" />,
+                ]}
+              />
             </p>
           </CardContent>
         </CollapsibleContent>
