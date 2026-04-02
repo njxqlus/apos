@@ -9,6 +9,7 @@ export interface ProtocolConfig {
   maxRpsPerCore: number;
   processingLatencyMs: number;
   cpuPayloadPenalty: number;
+  memoryBandwidthGbps: number;
   baseRamMb: number;
   memoryFactor: number;
   isStateful: boolean;
@@ -17,25 +18,27 @@ export interface ProtocolConfig {
 export interface FrameworkConfig {
   cpuEfficiencyMultiplier: number;
   baseRamPenaltyMb: number;
-  requestMemoryKb: number;
+  ramPer1kRpsMb: number;
   latencyPenaltyMs: number;
 }
 
 export const PROTOCOL_CONFIGS: Record<Protocol, ProtocolConfig> = {
   REST: {
     overheadBytes: 500,
-    maxRpsPerCore: 8000, // Reduced from 12k to be more realistic for TLS + minimal logic
+    maxRpsPerCore: 8000,
     processingLatencyMs: 5,
     cpuPayloadPenalty: 0.95,
+    memoryBandwidthGbps: 1.0,
     baseRamMb: 128,
     memoryFactor: 1.1,
     isStateful: false,
   },
   gRPC: {
     overheadBytes: 50,
-    maxRpsPerCore: 35000, // Adjusted from 45k
+    maxRpsPerCore: 35000,
     processingLatencyMs: 2,
     cpuPayloadPenalty: 0.97,
+    memoryBandwidthGbps: 1.4,
     baseRamMb: 128,
     memoryFactor: 1.05,
     isStateful: false,
@@ -44,25 +47,28 @@ export const PROTOCOL_CONFIGS: Record<Protocol, ProtocolConfig> = {
     overheadBytes: 28,
     maxRpsPerCore: 50000,
     processingLatencyMs: 1,
-    cpuPayloadPenalty: 0.99,
+    cpuPayloadPenalty: 0.98,
+    memoryBandwidthGbps: 2.2,
     baseRamMb: 32,
     memoryFactor: 1.0,
     isStateful: false,
   },
   Kafka: {
     overheadBytes: 60,
-    maxRpsPerCore: 80000, // Increased as it is primarily I/O bound
+    maxRpsPerCore: 80000,
     processingLatencyMs: 5,
     cpuPayloadPenalty: 0.96,
+    memoryBandwidthGbps: 3.5,
     baseRamMb: 2048,
     memoryFactor: 1.3,
     isStateful: true,
   },
   AMQP: {
     overheadBytes: 300,
-    maxRpsPerCore: 40000, // Increased as it is primarily I/O bound
+    maxRpsPerCore: 40000,
     processingLatencyMs: 10,
     cpuPayloadPenalty: 0.94,
+    memoryBandwidthGbps: 2.5,
     baseRamMb: 1024,
     memoryFactor: 1.25,
     isStateful: true,
@@ -70,27 +76,22 @@ export const PROTOCOL_CONFIGS: Record<Protocol, ProtocolConfig> = {
 };
 
 export const FRAMEWORK_CONFIGS: Record<ArchitectureTier, FrameworkConfig> = {
-  // Tier 1: Optimized for zero-cost abstractions and low latency
   Native_Performance: {
     cpuEfficiencyMultiplier: 0.95,
     baseRamPenaltyMb: 32,
-    requestMemoryKb: 24, // Slight increase
+    ramPer1kRpsMb: 2,
     latencyPenaltyMs: 1,
   },
-
-  // Tier 2: General-purpose runtimes with standard GC
   Managed_Runtime: {
     cpuEfficiencyMultiplier: 0.75,
     baseRamPenaltyMb: 200,
-    requestMemoryKb: 80, // Increased to account for GC pressure and buffers
+    ramPer1kRpsMb: 12,
     latencyPenaltyMs: 8,
   },
-
-  // Tier 3: High-level frameworks focused on developer productivity
   Enterprise_Abstraction: {
     cpuEfficiencyMultiplier: 0.35,
     baseRamPenaltyMb: 600,
-    requestMemoryKb: 350, // Massive increase for thread stacks (200KB+) and JVM overhead
+    ramPer1kRpsMb: 45,
     latencyPenaltyMs: 25,
   },
 };
@@ -100,7 +101,7 @@ export function calculateMetrics(
   frameworkType: ArchitectureTier,
   rps: number,
   payloadBytes: number,
-  networkRttMs: number = 30, // Default to 30ms for Internet
+  networkRttMs: number = 30,
   isSecure: boolean = true,
   connectionReuse: boolean = true,
 ) {
@@ -108,63 +109,98 @@ export function calculateMetrics(
   const framework = FRAMEWORK_CONFIGS[frameworkType];
 
   // 1. Connection and Security Modifiers
-  // realistic TLS Factor table: 0.9 (keep-alive), 0.6 (new connection)
   const tlsFactor = isSecure ? (connectionReuse ? 0.9 : 0.6) : 1.0;
-  const tlsLatency = isSecure ? networkRttMs * 0.5 : 0; // TLS handshake adds ~0.5-1 RTT overhead
-  const tlsBytes = isSecure ? 80 : 0; // Typical TLS overhead per request (record header, padding, etc.)
-  const connectionReuseFactor = connectionReuse ? 0.85 : 1.0; // 10-20% boost from reuse
+  const tlsLatency = isSecure ? networkRttMs * 0.5 : 0;
+  const tlsBytes = isSecure ? 80 : 0;
+  const connectionReuseFactor = connectionReuse ? 0.85 : 1.0;
+  const tlsRamBase = isSecure ? 64 : 0;
+  const tlsRamDynamic = isSecure ? 3 : 0;
 
   // 2. Bandwidth (Mbps)
-  // formula: BW = RPS × (Payload + ProtocolOverhead + TLSOverhead) × 8
   const totalPacketBytes = payloadBytes + config.overheadBytes + tlsBytes;
   const bandwidthMbps = (rps * totalPacketBytes * 8) / 1_000_000;
 
-  // 3. CPU (Cores)
-  // formula: MaxRPS = ProtocolRPS × FrameworkEfficiency × TLSFactor
-  // Stateful protocols (Kafka/AMQP) are I/O bound and bypass much of the framework overhead
+  // 3. CPU (Cores) - Memory Bandwidth Limited Model
+  const segments = Math.ceil(payloadBytes / 1440);
+  const reassemblyTax = segments > 1 ? 1 + segments * 0.12 : 1;
+
   const frameworkEfficiency = config.isStateful
     ? Math.max(0.85, framework.cpuEfficiencyMultiplier)
     : framework.cpuEfficiencyMultiplier;
 
-  // Initial maxRps per core calculation
-  let maxRps = config.maxRpsPerCore * frameworkEfficiency * tlsFactor;
+  // Limitation 1: Processing/Overhead Bound
+  let maxRps =
+    (config.maxRpsPerCore * frameworkEfficiency * tlsFactor) / reassemblyTax;
+  if (connectionReuse) maxRps /= connectionReuseFactor;
 
-  // Apply connection reuse benefit (inverse of the factor to get ~17% boost)
-  if (connectionReuse) {
-    maxRps /= connectionReuseFactor;
+  // Application-level payload processing penalty (Capped at 4 blocks)
+  if (!config.isStateful && payloadBytes > 10240) {
+    const blocks = Math.min(Math.floor((payloadBytes - 10240) / 10240), 4);
+    maxRps *= Math.pow(config.cpuPayloadPenalty, blocks);
   }
 
-  // Payload size processing penalty (exponential decay after 10KB baseline)
-  if (payloadBytes > 10240) {
-    const blocks = Math.floor((payloadBytes - 10240) / 10240);
-    maxRps *= Math.pow(config.cpuPayloadPenalty, blocks);
+  // Limitation 2: Memory Bandwidth Bound (structural ceiling for large payloads)
+  if (payloadBytes > 32768) {
+    const memBoundRps =
+      (config.memoryBandwidthGbps * 1_000_000_000) / (payloadBytes * 8 || 8);
+    maxRps = Math.min(maxRps, memBoundRps);
   }
 
   const cpuCores = Math.ceil(rps / Math.max(maxRps, 10));
   const utilization = rps / (cpuCores * maxRps);
 
   // 4. Latency (ms)
-  // formula: Latency = RTT + Protocol + Framework + TLS
   const frameworkLat = framework.latencyPenaltyMs;
   let latencyMs =
     networkRttMs + config.processingLatencyMs + frameworkLat + tlsLatency;
 
-  // Utilization-based latency growth (matches queueing theory behavior)
   if (utilization > 0.7) {
-    latencyMs += (utilization - 0.7) * 50;
+    latencyMs += Math.pow(utilization - 0.7, 2) * 200;
   }
 
-  // 5. RAM (MB)
-  // Concurrency = RPS × Latency / 1000
-  // RAM = BaseRAM + Concurrency × RequestMemory
-  const concurrency = (rps * latencyMs) / 1000;
-  const requestMemoryMb = framework.requestMemoryKb / 1024;
+  // 5. RAM (MB) - Advanced Heap Expansion Model
+  let ramMb = config.baseRamMb * config.memoryFactor + tlsRamBase;
 
-  let baseRamMb = config.baseRamMb * config.memoryFactor;
-  baseRamMb += framework.baseRamPenaltyMb;
-  if (isSecure) baseRamMb += 64; // TLS session/buffer overhead
+  if (!config.isStateful) {
+    // 1. Static Framework Footprint
+    ramMb += framework.baseRamPenaltyMb;
 
-  const ramMb = baseRamMb + concurrency * requestMemoryMb;
+    // 2. The Payload Expansion Factor
+    // Assumes payloads under 5KB do not heavily distort standard heap allocation
+    const payloadExpansionFactor = Math.max(1, payloadBytes / 5120);
+
+    // 3. Adjusted Dynamic Heap Bloat
+    const adjustedRamPer1k = framework.ramPer1kRpsMb * payloadExpansionFactor;
+    const dynamicRam = (rps / 1000) * (adjustedRamPer1k + tlsRamDynamic);
+
+    // 4. Physical In-Flight Wire Bytes
+    const avgLatencySeconds = latencyMs / 1000;
+    const inflightRequests = rps * avgLatencySeconds;
+    const inflightRam =
+      (inflightRequests * totalPacketBytes * config.memoryFactor) / 1_048_576;
+
+    ramMb += dynamicRam + inflightRam;
+  } else {
+    // Stateful behavior (Kafka/AMQP) is mostly governed by baseRam and concurrency-independent buffers
+    ramMb += framework.baseRamPenaltyMb;
+
+    // Throughput-based receive buffer scaling (unique to brokers)
+    const throughputMBps = (rps * payloadBytes) / 1_000_000;
+    ramMb += throughputMBps * 0.3;
+
+    const concurrency = (rps * latencyMs) / 1000;
+    ramMb += (concurrency * 100) / 1024; // Simple 100KB per request buffer for stateful messaging
+  }
+
+  // 6. Reliability Guard (Validity Cap)
+  const workloadComplexity = rps * (payloadBytes / 1024);
+  const isReliable = workloadComplexity <= 500000;
+  let warning: string | undefined;
+
+  if (!isReliable) {
+    warning =
+      "Extreme Workload: Results exceed typical architectural boundaries and should be treated as theoretical.";
+  }
 
   return {
     bandwidthMbps: Number(bandwidthMbps.toFixed(2)),
@@ -172,5 +208,7 @@ export function calculateMetrics(
     ramMb: Math.ceil(ramMb),
     latencyMs: Math.round(latencyMs),
     utilization: Number(utilization.toFixed(2)),
+    isReliable,
+    warning,
   };
 }
