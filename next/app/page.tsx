@@ -53,7 +53,7 @@ const METRIC_DESCRIPTIONS = {
   latency: {
     title: "Network Latency",
     description:
-      "The projected end-to-end response time. This includes network round-trip time (RTT), protocol internal processing latency, and additional queuing delays that occur when CPU utilization exceeds 70%.",
+      "The projected end-to-end response time. This includes network round-trip time (RTT, 30 ms), protocol internal processing latency, and additional queuing delays that occur when CPU utilization exceeds 70%.",
   },
   utilization: {
     title: "CPU Utilization",
