@@ -34,7 +34,7 @@ export function Disclaimer() {
             </span>
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-muted-foreground/50 transition-all duration-300 ${
+            className={`w-4 h-4 text-muted-foreground transition-all duration-300 ${
               isOpen
                 ? "rotate-180 text-primary"
                 : "group-hover/disclaimer:text-primary"
@@ -43,7 +43,7 @@ export function Disclaimer() {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="pt-0 pb-6 px-6 font-mono text-sm leading-relaxed text-muted-foreground/80 space-y-6 border-t border-border/10 mt-2">
+          <CardContent className="pt-0 pb-6 px-6 font-mono text-sm leading-relaxed text-muted-foreground space-y-6 border-t border-border/10 mt-2">
             <p className="pt-4">
               <Trans
                 i18nKey="disclaimer.intro"

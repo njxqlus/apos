@@ -179,6 +179,8 @@ const PAYLOAD_PRESETS = [
   { label: "1 MB", value: 1048576 },
 ];
 
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 export default function Home() {
   const { t, i18n } = useTranslation();
   const [rps, setRps] = React.useState(10000);
@@ -264,8 +266,9 @@ export default function Home() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
-      <div className="absolute top-6 right-6 z-10">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono transition-colors duration-500">
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
@@ -294,9 +297,14 @@ export default function Home() {
                     : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
                 }`}
               >
-                <span className="text-[11px] font-bold tracking-tight uppercase">
-                  {lang.label}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold tracking-tight uppercase">
+                    {lang.label}
+                  </span>
+                  {i18n.language === lang.id && (
+                    <Check className="w-3 h-3 text-primary" />
+                  )}
+                </div>
                 <span className="text-[9px] font-mono opacity-40">
                   {lang.id.toUpperCase()}
                 </span>
@@ -306,7 +314,7 @@ export default function Home() {
         </DropdownMenu>
       </div>
 
-      <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+      <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90">
         <span className="text-[#ff5023]">A</span>PI{" "}
         <span className="text-[#ff5023]">P</span>rotocol{" "}
         <span className="text-[#ff5023]">O</span>verhead{" "}
@@ -347,7 +355,7 @@ export default function Home() {
                     className={`h-9 px-4 text-[11px] font-bold tracking-tight transition-all border-dashed ${
                       framework === f
                         ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
-                        : "bg-muted/5 text-muted-foreground/60 hover:bg-muted/20 border-border/30 hover:border-border/60"
+                        : "bg-muted/10 text-muted-foreground hover:bg-muted/20 border-border/30 hover:border-border/60"
                     }`}
                     onClick={() => setFramework(f)}
                   >
@@ -404,7 +412,7 @@ export default function Home() {
                   className={`h-7 px-2.5 text-[10px] font-bold tracking-tighter transition-all ${
                     rps === p.value
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted/10 text-muted-foreground/80 hover:bg-muted/30 border-border/40"
+                      : "bg-muted/15 text-muted-foreground hover:bg-muted/30 border-border/40"
                   }`}
                   onClick={() => setRps(p.value)}
                 >
@@ -474,7 +482,7 @@ export default function Home() {
                   className={`h-7 px-2.5 text-[10px] font-bold tracking-tighter transition-all ${
                     payloadSize === p.value
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted/10 text-muted-foreground/80 hover:bg-muted/30 border-border/40"
+                      : "bg-muted/15 text-muted-foreground hover:bg-muted/30 border-border/40"
                   }`}
                   onClick={() => setPayloadSize(p.value)}
                 >
