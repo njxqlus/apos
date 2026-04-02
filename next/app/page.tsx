@@ -13,8 +13,74 @@ import {
   Cpu,
   HardDrive,
   BarChart3,
+  HelpCircle,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { PROTOCOL_CONFIGS, calculateMetrics, Protocol } from "@/lib/calc";
+
+const METRIC_DESCRIPTIONS = {
+  bandwidth: {
+    title: "Network Bandwidth",
+    description:
+      "The total network throughput required to handle the given RPS and payload size. This includes the request payload, response data, and estimated protocol-specific overhead (headers, framing, etc.) in both directions.",
+  },
+  cpuCores: {
+    title: "CPU Cores",
+    description:
+      "The estimated number of virtual CPU cores (vCPUs) required to process the workload. This takes into account protocol-specific parsing efficiency and a penalty for larger payloads that require more processing time per byte.",
+  },
+  ram: {
+    title: "Memory Allocation",
+    description:
+      "The estimated RAM footprint of the infrastructure. For stateless protocols, this is based on in-flight requests and their payload sizes. For stateful protocols (like Kafka/AMQP), it adds baseline overhead and message buffering requirements.",
+  },
+  latency: {
+    title: "Network Latency",
+    description:
+      "The projected end-to-end response time. This includes network round-trip time (RTT), protocol internal processing latency, and additional queuing delays that occur when CPU utilization exceeds 70%.",
+  },
+  utilization: {
+    title: "CPU Utilization",
+    description:
+      "The average processor load across all allocated cores. Maintaining utilization below 70-80% is recommended to prevent 'tail latency' spikes where queuing delays cause unpredictable slow responses.",
+  },
+};
+
+function MetricHelp({ metric }: { metric: keyof typeof METRIC_DESCRIPTIONS }) {
+  const { title, description } = METRIC_DESCRIPTIONS[metric];
+  return (
+    <Dialog>
+      <DialogTrigger
+        className="ml-1.5 inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
+        aria-label={`About ${title}`}
+      >
+        <HelpCircle className="w-3 h-3" />
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px] border-border/50 bg-popover shadow-2xl">
+        <DialogHeader>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <HelpCircle className="w-4 h-4 text-primary" />
+            </div>
+            <DialogTitle className="text-lg font-bold tracking-tight uppercase">
+              {title}
+            </DialogTitle>
+          </div>
+          <DialogDescription className="text-sm leading-relaxed text-muted-foreground font-mono">
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const RPS_PRESETS = [
   { label: "100", value: 100 },
@@ -79,7 +145,7 @@ export default function Home() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
-      <Card className="relative w-full max-w-6xl border-border/50 bg-card/50 shadow-2xl transition-all hover:border-primary/50">
+      <Card className="relative w-full max-w-6xl border-border/50 bg-card/95 shadow-2xl transition-colors hover:border-primary/50">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -227,7 +293,7 @@ export default function Home() {
       </Card>
 
       {/* Results Section */}
-      <Card className="relative w-full max-w-6xl mt-8 border-border/50 bg-card/50 shadow-2xl backdrop-blur-xl transition-all hover:border-primary/50">
+      <Card className="relative w-full max-w-6xl mt-8 border-border/50 bg-card/95 shadow-2xl transition-colors hover:border-primary/50">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -250,30 +316,35 @@ export default function Home() {
                     <div className="flex items-center justify-end gap-1.5">
                       <BarChart3 className="w-3 h-3" />
                       Bandwidth
+                      <MetricHelp metric="bandwidth" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Cpu className="w-3 h-3" />
                       CPU Cores
+                      <MetricHelp metric="cpuCores" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <HardDrive className="w-3 h-3" />
                       RAM
+                      <MetricHelp metric="ram" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Activity className="w-3 h-3" />
                       Latency
+                      <MetricHelp metric="latency" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Activity className="w-3 h-3" />
                       CPU Util
+                      <MetricHelp metric="utilization" />
                     </div>
                   </th>
                 </tr>
@@ -331,7 +402,7 @@ export default function Home() {
                         <span>
                           {(res.metrics.utilization * 100)
                             .toFixed(0)
-                            .padStart(2, "\u00A0")}
+                            .padStart(3, "\u00A0")}
                           %
                         </span>
                       </div>
