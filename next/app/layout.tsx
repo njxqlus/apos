@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/next";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
+        <Analytics />
         <I18nProvider>
           <ThemeProvider>
             <TooltipProvider>{children}</TooltipProvider>
