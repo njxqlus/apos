@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Settings2,
   Activity,
@@ -267,13 +268,10 @@ export default function Home() {
       <div className="absolute top-6 right-6 z-10">
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group"
-              />
-            }
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group",
+            )}
           >
             <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
             {i18n.language.toUpperCase()}

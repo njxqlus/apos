@@ -133,3 +133,49 @@
     @apply cursor-pointer;
   }
 }
+
+@layer components {
+  .apos-loader-container {
+    @apply fixed inset-0 z-50 flex flex-col items-center justify-center bg-background transition-opacity duration-500 font-mono overflow-hidden;
+  }
+
+  .apos-loader-grid {
+    @apply absolute inset-0 opacity-10 pointer-events-none;
+    background-image:
+      linear-gradient(to right, oklch(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(var(--border)) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at center, black, transparent 80%);
+  }
+
+  .apos-loader-content {
+    @apply relative flex flex-col items-center gap-6;
+  }
+
+  .apos-loader-logo {
+    @apply text-4xl font-black tracking-widest text-[#ff5023] animate-pulse;
+    filter: drop-shadow(0 0 15px rgba(255, 80, 35, 0.3));
+  }
+
+  .apos-loader-bar {
+    @apply w-48 h-1 bg-muted/20 rounded-full overflow-hidden relative;
+  }
+
+  .apos-loader-progress {
+    @apply absolute top-0 left-0 h-full bg-[#ff5023] animate-[loader-progress_1.5s_ease-in-out_infinite];
+    width: 40%;
+  }
+
+  .apos-loader-status {
+    @apply text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60;
+  }
+}
+
+@keyframes loader-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
