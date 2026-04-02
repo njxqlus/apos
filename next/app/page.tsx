@@ -14,6 +14,9 @@ import {
   HardDrive,
   BarChart3,
   HelpCircle,
+  Download,
+  Clipboard,
+  Check,
 } from "lucide-react";
 import {
   Dialog,
@@ -23,7 +26,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PROTOCOL_CONFIGS, calculateMetrics, Protocol } from "@/lib/calc";
+import {
+  PROTOCOL_CONFIGS,
+  FRAMEWORK_CONFIGS,
+  calculateMetrics,
+  Protocol,
+  ArchitectureTier,
+} from "@/lib/calc";
 
 const METRIC_DESCRIPTIONS = {
   bandwidth: {
@@ -82,6 +91,84 @@ function MetricHelp({ metric }: { metric: keyof typeof METRIC_DESCRIPTIONS }) {
   );
 }
 
+function RuntimeHelp() {
+  return (
+    <Dialog>
+      <DialogTrigger
+        className="ml-1.5 inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
+        aria-label="About Runtime Architectures"
+      >
+        <HelpCircle className="w-3 h-3" />
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[550px] border-border/50 bg-popover shadow-2xl">
+        <DialogHeader>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Settings2 className="w-4 h-4 text-primary" />
+            </div>
+            <DialogTitle className="text-lg font-bold tracking-tight uppercase">
+              Runtime Architectures
+            </DialogTitle>
+          </div>
+          <DialogDescription className="text-sm leading-relaxed text-muted-foreground font-mono">
+            Choose the performance tier of your application&apos;s execution
+            environment.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="mt-4 overflow-hidden rounded-lg border border-border/40">
+          <table className="w-full text-left border-collapse font-mono text-[10px]">
+            <thead>
+              <tr className="bg-muted/30 border-b border-border/40 text-muted-foreground/80">
+                <th className="p-3 font-bold uppercase">Tier</th>
+                <th className="p-3 font-bold uppercase">Characteristics</th>
+                <th className="p-3 font-bold uppercase">Examples</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/20">
+              <tr>
+                <td className="p-3 font-bold text-primary whitespace-nowrap">
+                  Native / Compiled
+                </td>
+                <td className="p-3 text-muted-foreground">
+                  Direct machine code execution, manual or highly efficient
+                  memory management.
+                </td>
+                <td className="p-3 text-foreground/70 italic whitespace-nowrap">
+                  C++, Rust, Go, Zig
+                </td>
+              </tr>
+              <tr className="bg-muted/10">
+                <td className="p-3 font-bold text-primary whitespace-nowrap">
+                  Managed / JIT
+                </td>
+                <td className="p-3 text-muted-foreground">
+                  Fast execution but requires a Virtual Machine and significant
+                  Garbage Collection (GC) overhead.
+                </td>
+                <td className="p-3 text-foreground/70 italic whitespace-nowrap">
+                  Node.js, C#, Java
+                </td>
+              </tr>
+              <tr>
+                <td className="p-3 font-bold text-primary whitespace-nowrap">
+                  Enterprise / Abstracted
+                </td>
+                <td className="p-3 text-muted-foreground">
+                  Heavy use of reflection, dependency injection, and deep
+                  middleware stacks.
+                </td>
+                <td className="p-3 text-foreground/70 italic whitespace-nowrap">
+                  Spring Boot, Rails, Django
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 const RPS_PRESETS = [
   { label: "100", value: 100 },
   { label: "1K", value: 1000 },
@@ -110,6 +197,9 @@ const PAYLOAD_PRESETS = [
 export default function Home() {
   const [rps, setRps] = React.useState(10000);
   const [payloadSize, setPayloadSize] = React.useState(1024);
+  const [framework, setFramework] =
+    React.useState<ArchitectureTier>("Managed_Runtime");
+  const [copied, setCopied] = React.useState(false);
 
   const handleRpsChange = (val: number | readonly number[]) => {
     const value = Array.isArray(val) ? val[0] : val;
@@ -138,10 +228,51 @@ export default function Home() {
       const protocol = p as Protocol;
       return {
         protocol,
-        metrics: calculateMetrics(protocol, rps, payloadSize),
+        metrics: calculateMetrics(protocol, framework, rps, payloadSize),
       };
     });
-  }, [rps, payloadSize]);
+  }, [rps, payloadSize, framework]);
+
+  const copyAsMarkdown = () => {
+    const header =
+      "| Protocol | Bandwidth (Mbps) | CPU Cores (vCPU) | RAM | Latency (ms) | CPU Util (%) |\n";
+    const separator = "| :--- | ---: | ---: | ---: | ---: | ---: |\n";
+    const body = results
+      .map((res) => {
+        const ram =
+          res.metrics.ramMb < 1024
+            ? `${res.metrics.ramMb} MB`
+            : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`;
+        const util = (res.metrics.utilization * 100).toFixed(0) + "%";
+        return `| ${res.protocol} | ${res.metrics.bandwidthMbps.toLocaleString()} | ${res.metrics.cpuCores} | ${ram} | ${res.metrics.latencyMs} | ${util} |`;
+      })
+      .join("\n");
+
+    const fwConfig = FRAMEWORK_CONFIGS[framework];
+    const efficiency =
+      (fwConfig.cpuEfficiencyMultiplier * 100).toFixed(0) + "%";
+
+    const summary = [
+      `- **Framework:** ${framework.replace("_", " ")}`,
+      `- **Framework Efficiency:** ${efficiency}`,
+      `- **Baseline RAM Penalty:** ${fwConfig.baseRamPenaltyMb} MB`,
+      `- **Workload:** ${rps.toLocaleString()} RPS`,
+      `- **Payload Size:** ${
+        payloadSize < 1024
+          ? `${payloadSize} B`
+          : payloadSize < 1048576
+            ? `${(payloadSize / 1024).toFixed(1)} KB`
+            : `${(payloadSize / 1048576).toFixed(1)} MB`
+      }`,
+      "",
+      header + separator + body,
+    ].join("\n");
+
+    navigator.clipboard.writeText(summary).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
@@ -157,7 +288,48 @@ export default function Home() {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-8 py-5">
+        <CardContent className="space-y-10 py-6">
+          {/* Framework Selection */}
+          <div className="group space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
+                  Runtime Architecture
+                </Label>
+                <RuntimeHelp />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {(Object.keys(FRAMEWORK_CONFIGS) as ArchitectureTier[]).map(
+                (f) => (
+                  <Button
+                    key={f}
+                    variant="outline"
+                    size="sm"
+                    className={`h-9 px-4 text-[11px] font-bold tracking-tight transition-all border-dashed ${
+                      framework === f
+                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
+                        : "bg-muted/5 text-muted-foreground/60 hover:bg-muted/20 border-border/30 hover:border-border/60"
+                    }`}
+                    onClick={() => setFramework(f)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          framework === f
+                            ? "bg-primary-foreground"
+                            : "bg-muted-foreground/30"
+                        }`}
+                      />
+                      {f.replace("_", " ")}
+                    </div>
+                  </Button>
+                ),
+              )}
+            </div>
+            <div className="h-px w-full bg-linear-to-r from-border/50 via-border/10 to-transparent" />
+          </div>
+
           {/* RPS Parameter */}
           <div className="group space-y-4">
             <div className="flex items-end justify-between">
@@ -412,6 +584,40 @@ export default function Home() {
               </tbody>
             </table>
           </div>
+        </CardContent>
+        <div className="absolute -bottom-px left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+      </Card>
+
+      {/* Export Section */}
+      <Card className="relative w-full max-w-6xl mt-8 border-border/50 bg-card/95 shadow-2xl transition-colors hover:border-primary/50">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Download className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle className="text-xl font-semibold tracking-tight uppercase">
+              Export
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="py-6">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 group border-border/50 hover:border-primary/50 hover:bg-primary/5 min-w-[180px] transition-all"
+            onClick={copyAsMarkdown}
+          >
+            {copied ? (
+              <>
+                <Check className="w-4 h-4 text-primary animate-in zoom-in duration-300" />
+                <span className="text-primary font-bold">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Clipboard className="w-4 h-4 transition-transform group-hover:scale-110 text-muted-foreground group-hover:text-primary" />
+                <span>Copy as Markdown</span>
+              </>
+            )}
+          </Button>
         </CardContent>
         <div className="absolute -bottom-px left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent opacity-50" />
       </Card>
