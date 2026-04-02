@@ -18,6 +18,7 @@ import {
   Clipboard,
   Check,
 } from "lucide-react";
+import { Disclaimer } from "@/components/Disclaimer";
 import {
   Dialog,
   DialogContent,
@@ -276,6 +277,14 @@ export default function Home() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
+      <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+        <span className="text-[#ff5023]">A</span>PI{" "}
+        <span className="text-[#ff5023]">P</span>rotocol{" "}
+        <span className="text-[#ff5023]">O</span>verhead{" "}
+        <span className="text-[#ff5023]">S</span>imulator
+      </h1>
+      <Disclaimer />
+
       <Card className="relative w-full max-w-6xl border-border/50 bg-card/95 shadow-2xl transition-colors hover:border-primary/50">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">

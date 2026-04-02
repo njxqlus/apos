@@ -126,6 +126,7 @@
   }
   html {
     @apply font-mono;
+    font-size: 1.3rem;
   }
   button,
   [role="button"] {
