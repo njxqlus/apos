@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Settings2,
   Activity,
@@ -17,7 +18,10 @@ import {
   Download,
   Clipboard,
   Check,
+  Languages,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Disclaimer } from "@/components/Disclaimer";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +31,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   PROTOCOL_CONFIGS,
   FRAMEWORK_CONFIGS,
   calculateMetrics,
@@ -34,41 +44,17 @@ import {
   ArchitectureTier,
 } from "@/lib/calc";
 
-const METRIC_DESCRIPTIONS = {
-  bandwidth: {
-    title: "Network Bandwidth",
-    description:
-      "The total network throughput required to handle the given RPS and payload size. This includes the request payload, response data, and estimated protocol-specific overhead (headers, framing, etc.) in both directions.",
-  },
-  cpuCores: {
-    title: "CPU Cores",
-    description:
-      "The estimated number of virtual CPU cores (vCPUs) required to process the workload. This takes into account protocol-specific parsing efficiency and a penalty for larger payloads that require more processing time per byte.",
-  },
-  ram: {
-    title: "Memory Allocation",
-    description:
-      "The estimated RAM footprint of the infrastructure. For stateless protocols, this is based on in-flight requests and their payload sizes. For stateful protocols (like Kafka/AMQP), it adds baseline overhead and message buffering requirements.",
-  },
-  latency: {
-    title: "Network Latency",
-    description:
-      "The projected end-to-end response time. This includes network round-trip time (RTT, 30 ms), protocol internal processing latency, and additional queuing delays that occur when CPU utilization exceeds 70%.",
-  },
-  utilization: {
-    title: "CPU Utilization",
-    description:
-      "The average processor load across all allocated cores. Maintaining utilization below 70-80% is recommended to prevent 'tail latency' spikes where queuing delays cause unpredictable slow responses.",
-  },
-};
+type MetricKey = "bandwidth" | "cpuCores" | "ram" | "latency" | "utilization";
 
-function MetricHelp({ metric }: { metric: keyof typeof METRIC_DESCRIPTIONS }) {
-  const { title, description } = METRIC_DESCRIPTIONS[metric];
+function MetricHelp({ metric }: { metric: MetricKey }) {
+  const { t } = useTranslation();
+  const title = t(`metrics.${metric}.title`);
+  const description = t(`metrics.${metric}.description`);
   return (
     <Dialog>
       <DialogTrigger
         className="ml-1.5 inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
-        aria-label={`About ${title}`}
+        aria-label={t("metric_help_aria", { title })}
       >
         <HelpCircle className="w-3 h-3" />
       </DialogTrigger>
@@ -92,11 +78,12 @@ function MetricHelp({ metric }: { metric: keyof typeof METRIC_DESCRIPTIONS }) {
 }
 
 function RuntimeHelp() {
+  const { t } = useTranslation();
   return (
     <Dialog>
       <DialogTrigger
         className="ml-1.5 inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
-        aria-label="About Runtime Architectures"
+        aria-label={t("runtime_help_aria")}
       >
         <HelpCircle className="w-3 h-3" />
       </DialogTrigger>
@@ -107,31 +94,31 @@ function RuntimeHelp() {
               <Settings2 className="w-4 h-4 text-primary" />
             </div>
             <DialogTitle className="text-lg font-bold tracking-tight uppercase">
-              Runtime Architectures
+              {t("runtime_architectures")}
             </DialogTitle>
           </div>
           <DialogDescription className="text-sm leading-relaxed text-muted-foreground font-mono">
-            Choose the performance tier of your application&apos;s execution
-            environment.
+            {t("runtime_choose_tier")}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 overflow-hidden rounded-lg border border-border/40">
           <table className="w-full text-left border-collapse font-mono text-[10px]">
             <thead>
               <tr className="bg-muted/30 border-b border-border/40 text-muted-foreground/80">
-                <th className="p-3 font-bold uppercase">Tier</th>
-                <th className="p-3 font-bold uppercase">Characteristics</th>
-                <th className="p-3 font-bold uppercase">Examples</th>
+                <th className="p-3 font-bold uppercase">{t("tier")}</th>
+                <th className="p-3 font-bold uppercase">
+                  {t("characteristics")}
+                </th>
+                <th className="p-3 font-bold uppercase">{t("examples")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">
               <tr>
                 <td className="p-3 font-bold text-primary whitespace-nowrap">
-                  Native / Compiled
+                  {t("native_compiled")}
                 </td>
                 <td className="p-3 text-muted-foreground">
-                  Direct machine code execution, manual or highly efficient
-                  memory management.
+                  {t("native_desc")}
                 </td>
                 <td className="p-3 text-foreground/70 italic whitespace-nowrap">
                   C++, Rust, Go, Zig
@@ -139,11 +126,10 @@ function RuntimeHelp() {
               </tr>
               <tr className="bg-muted/10">
                 <td className="p-3 font-bold text-primary whitespace-nowrap">
-                  Managed / JIT
+                  {t("managed_jit")}
                 </td>
                 <td className="p-3 text-muted-foreground">
-                  Fast execution but requires a Virtual Machine and significant
-                  Garbage Collection (GC) overhead.
+                  {t("managed_desc")}
                 </td>
                 <td className="p-3 text-foreground/70 italic whitespace-nowrap">
                   Node.js, C#, Java
@@ -151,11 +137,10 @@ function RuntimeHelp() {
               </tr>
               <tr>
                 <td className="p-3 font-bold text-primary whitespace-nowrap">
-                  Enterprise / Abstracted
+                  {t("enterprise_abstracted")}
                 </td>
                 <td className="p-3 text-muted-foreground">
-                  Heavy use of reflection, dependency injection, and deep
-                  middleware stacks.
+                  {t("enterprise_desc")}
                 </td>
                 <td className="p-3 text-foreground/70 italic whitespace-nowrap">
                   Spring Boot, Rails, Django
@@ -194,12 +179,19 @@ const PAYLOAD_PRESETS = [
   { label: "1 MB", value: 1048576 },
 ];
 
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 export default function Home() {
+  const { t, i18n } = useTranslation();
   const [rps, setRps] = React.useState(10000);
   const [payloadSize, setPayloadSize] = React.useState(1024);
   const [framework, setFramework] =
     React.useState<ArchitectureTier>("Managed_Runtime");
   const [copied, setCopied] = React.useState(false);
+
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
 
   const handleRpsChange = (val: number | readonly number[]) => {
     const value = Array.isArray(val) ? val[0] : val;
@@ -234,8 +226,7 @@ export default function Home() {
   }, [rps, payloadSize, framework]);
 
   const copyAsMarkdown = () => {
-    const header =
-      "| Protocol | Bandwidth (Mbps) | CPU Cores (vCPU) | RAM | Latency (ms) | CPU Util (%) |\n";
+    const header = `| ${t("protocol")} | ${t("bandwidth")} (Mbps) | ${t("cpu_cores")} (vCPU) | ${t("ram")} | ${t("latency")} (ms) | ${t("cpu_util")} (%) |\n`;
     const separator = "| :--- | ---: | ---: | ---: | ---: | ---: |\n";
     const body = results
       .map((res) => {
@@ -253,11 +244,11 @@ export default function Home() {
       (fwConfig.cpuEfficiencyMultiplier * 100).toFixed(0) + "%";
 
     const summary = [
-      `- **Framework:** ${framework.replace("_", " ")}`,
-      `- **Framework Efficiency:** ${efficiency}`,
-      `- **Baseline RAM Penalty:** ${fwConfig.baseRamPenaltyMb} MB`,
-      `- **Workload:** ${rps.toLocaleString()} RPS`,
-      `- **Payload Size:** ${
+      `- **${t("summary_framework")}:** ${t(framework)}`,
+      `- **${t("summary_efficiency")}:** ${efficiency}`,
+      `- **${t("summary_ram_penalty")}:** ${fwConfig.baseRamPenaltyMb} MB`,
+      `- **${t("summary_workload")}:** ${rps.toLocaleString()} RPS`,
+      `- **${t("summary_payload")}:** ${
         payloadSize < 1024
           ? `${payloadSize} B`
           : payloadSize < 1048576
@@ -275,7 +266,62 @@ export default function Home() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono transition-colors duration-500">
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        <ThemeToggle />
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group",
+            )}
+          >
+            <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+            {i18n.language.toUpperCase()}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-44 border-border/50 bg-card/95 backdrop-blur-xl p-1.5 shadow-2xl"
+          >
+            {[
+              { id: "en", label: "English" },
+              { id: "es", label: "Español" },
+              { id: "ru", label: "Русский" },
+            ].map((lang) => (
+              <DropdownMenuItem
+                key={lang.id}
+                onClick={() => changeLanguage(lang.id)}
+                className={`flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-all duration-200 ${
+                  i18n.language === lang.id
+                    ? "bg-primary/20 text-primary font-bold shadow-xs"
+                    : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold tracking-tight uppercase">
+                    {lang.label}
+                  </span>
+                  {i18n.language === lang.id && (
+                    <Check className="w-3 h-3 text-primary" />
+                  )}
+                </div>
+                <span className="text-[9px] font-mono opacity-40">
+                  {lang.id.toUpperCase()}
+                </span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90">
+        <span className="text-[#ff5023]">A</span>PI{" "}
+        <span className="text-[#ff5023]">P</span>rotocol{" "}
+        <span className="text-[#ff5023]">O</span>verhead{" "}
+        <span className="text-[#ff5023]">S</span>imulator
+      </h1>
+      <Disclaimer />
+
       <Card className="relative w-full max-w-6xl border-border/50 bg-card/95 shadow-2xl transition-colors hover:border-primary/50">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
@@ -283,7 +329,7 @@ export default function Home() {
               <Settings2 className="w-5 h-5 text-primary" />
             </div>
             <CardTitle className="text-xl font-semibold tracking-tight uppercase">
-              Configuration
+              {t("configuration")}
             </CardTitle>
           </div>
         </CardHeader>
@@ -294,7 +340,7 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
-                  Runtime Architecture
+                  {t("runtime_architecture")}
                 </Label>
                 <RuntimeHelp />
               </div>
@@ -309,7 +355,7 @@ export default function Home() {
                     className={`h-9 px-4 text-[11px] font-bold tracking-tight transition-all border-dashed ${
                       framework === f
                         ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
-                        : "bg-muted/5 text-muted-foreground/60 hover:bg-muted/20 border-border/30 hover:border-border/60"
+                        : "bg-muted/10 text-muted-foreground hover:bg-muted/20 border-border/30 hover:border-border/60"
                     }`}
                     onClick={() => setFramework(f)}
                   >
@@ -321,7 +367,7 @@ export default function Home() {
                             : "bg-muted-foreground/30"
                         }`}
                       />
-                      {f.replace("_", " ")}
+                      {t(f)}
                     </div>
                   </Button>
                 ),
@@ -338,7 +384,7 @@ export default function Home() {
                   htmlFor="rps"
                   className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors"
                 >
-                  Throughput (RPS)
+                  {t("throughput")}
                 </Label>
                 <div className="text-lg font-bold tracking-tighter text-foreground tabular-nums">
                   {rps.toLocaleString()}
@@ -366,7 +412,7 @@ export default function Home() {
                   className={`h-7 px-2.5 text-[10px] font-bold tracking-tighter transition-all ${
                     rps === p.value
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted/10 text-muted-foreground/80 hover:bg-muted/30 border-border/40"
+                      : "bg-muted/15 text-muted-foreground hover:bg-muted/30 border-border/40"
                   }`}
                   onClick={() => setRps(p.value)}
                 >
@@ -385,9 +431,11 @@ export default function Home() {
                 className="cursor-pointer"
               />
               <div className="mt-2 flex justify-between px-0.5 text-[9px] text-muted-foreground/50 font-mono font-bold uppercase tracking-widest">
-                <span>Min: 1</span>
-                <span className="text-primary opacity-80">RPS SCALE</span>
-                <span>Max: 500K</span>
+                <span>{t("min")}: 1</span>
+                <span className="text-primary opacity-80">
+                  {t("rps_scale")}
+                </span>
+                <span>{t("max")}: 500K</span>
               </div>
             </div>
           </div>
@@ -400,7 +448,7 @@ export default function Home() {
                   htmlFor="payload"
                   className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors"
                 >
-                  Payload Size
+                  {t("payload_size")}
                 </Label>
                 <div className="text-lg font-bold tracking-tighter text-foreground tabular-nums">
                   {payloadSize < 1024
@@ -434,7 +482,7 @@ export default function Home() {
                   className={`h-7 px-2.5 text-[10px] font-bold tracking-tighter transition-all ${
                     payloadSize === p.value
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted/10 text-muted-foreground/80 hover:bg-muted/30 border-border/40"
+                      : "bg-muted/15 text-muted-foreground hover:bg-muted/30 border-border/40"
                   }`}
                   onClick={() => setPayloadSize(p.value)}
                 >
@@ -453,9 +501,11 @@ export default function Home() {
                 className="cursor-pointer"
               />
               <div className="mt-2 flex justify-between px-0.5 text-[9px] text-muted-foreground/50 font-mono font-bold uppercase tracking-widest">
-                <span>Min: 1 B</span>
-                <span className="text-primary opacity-80">Payload Scale</span>
-                <span>Max: 1 MB</span>
+                <span>{t("min")}: 1 B</span>
+                <span className="text-primary opacity-80">
+                  {t("payload_scale")}
+                </span>
+                <span>{t("max")}: 1 MB</span>
               </div>
             </div>
           </div>
@@ -472,7 +522,7 @@ export default function Home() {
               <Zap className="w-5 h-5 text-primary" />
             </div>
             <CardTitle className="text-xl font-semibold tracking-tight uppercase">
-              Infrastructure Estimation
+              {t("estimation")}
             </CardTitle>
           </div>
         </CardHeader>
@@ -482,40 +532,40 @@ export default function Home() {
               <thead>
                 <tr className="border-b border-border/40">
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    Protocol
+                    {t("protocol")}
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <BarChart3 className="w-3 h-3" />
-                      Bandwidth
+                      {t("bandwidth")}
                       <MetricHelp metric="bandwidth" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Cpu className="w-3 h-3" />
-                      CPU Cores
+                      {t("cpu_cores")}
                       <MetricHelp metric="cpuCores" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <HardDrive className="w-3 h-3" />
-                      RAM
+                      {t("ram")}
                       <MetricHelp metric="ram" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Activity className="w-3 h-3" />
-                      Latency
+                      {t("latency")}
                       <MetricHelp metric="latency" />
                     </div>
                   </th>
                   <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Activity className="w-3 h-3" />
-                      CPU Util
+                      {t("cpu_util")}
                       <MetricHelp metric="utilization" />
                     </div>
                   </th>
@@ -596,7 +646,7 @@ export default function Home() {
               <Download className="w-5 h-5 text-primary" />
             </div>
             <CardTitle className="text-xl font-semibold tracking-tight uppercase">
-              Export
+              {t("export")}
             </CardTitle>
           </div>
         </CardHeader>
@@ -609,12 +659,12 @@ export default function Home() {
             {copied ? (
               <>
                 <Check className="w-4 h-4 text-primary animate-in zoom-in duration-300" />
-                <span className="text-primary font-bold">Copied!</span>
+                <span className="text-primary font-bold">{t("copied")}</span>
               </>
             ) : (
               <>
                 <Clipboard className="w-4 h-4 transition-transform group-hover:scale-110 text-muted-foreground group-hover:text-primary" />
-                <span>Copy as Markdown</span>
+                <span>{t("copy_markdown")}</span>
               </>
             )}
           </Button>
