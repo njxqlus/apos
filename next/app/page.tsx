@@ -30,6 +30,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   PROTOCOL_CONFIGS,
   FRAMEWORK_CONFIGS,
   calculateMetrics,
@@ -180,10 +186,8 @@ export default function Home() {
     React.useState<ArchitectureTier>("Managed_Runtime");
   const [copied, setCopied] = React.useState(false);
 
-  const toggleLanguage = () => {
-    const nextLang = i18n.language === "en" ? "es" : "en";
-    i18n.changeLanguage(nextLang);
-    document.documentElement.lang = nextLang;
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
   };
 
   const handleRpsChange = (val: number | readonly number[]) => {
@@ -261,15 +265,45 @@ export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono">
       <div className="absolute top-6 right-6 z-10">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50"
-          onClick={toggleLanguage}
-        >
-          <Languages className="w-3.5 h-3.5" />
-          {i18n.language.toUpperCase()}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group"
+            >
+              <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+              {i18n.language.toUpperCase()}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-44 border-border/50 bg-card/95 backdrop-blur-xl p-1.5 shadow-2xl"
+          >
+            {[
+              { id: "en", label: "English" },
+              { id: "es", label: "Español" },
+              { id: "ru", label: "Русский" },
+            ].map((lang) => (
+              <DropdownMenuItem
+                key={lang.id}
+                onClick={() => changeLanguage(lang.id)}
+                className={`flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-all duration-200 ${
+                  i18n.language === lang.id
+                    ? "bg-primary/20 text-primary font-bold shadow-xs"
+                    : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+                }`}
+              >
+                <span className="text-[11px] font-bold tracking-tight uppercase">
+                  {lang.label}
+                </span>
+                <span className="text-[9px] font-mono opacity-40">
+                  {lang.id.toUpperCase()}
+                </span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">

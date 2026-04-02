@@ -29,7 +29,7 @@ export function Disclaimer() {
             >
               <Info className="w-4 h-4" />
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground/80">
+            <span className="text-sm font-bold uppercase tracking-wider text-foreground/80">
               {t("disclaimer.title")}
             </span>
           </div>
@@ -43,7 +43,7 @@ export function Disclaimer() {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="pt-0 pb-6 px-6 font-mono text-[11px] leading-relaxed text-muted-foreground/80 space-y-6 border-t border-border/10 mt-2">
+          <CardContent className="pt-0 pb-6 px-6 font-mono text-sm leading-relaxed text-muted-foreground/80 space-y-6 border-t border-border/10 mt-2">
             <p className="pt-4">
               <Trans
                 i18nKey="disclaimer.intro"
@@ -55,10 +55,10 @@ export function Disclaimer() {
             </p>
 
             <div className="space-y-2">
-              <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/80">
+              <h4 className="font-bold text-xs uppercase tracking-widest text-primary/80">
                 {t("disclaimer.included_title")}
               </h4>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4 marker:text-primary/50 text-[10px]">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4 marker:text-primary/50 text-xs">
                 {(
                   t("disclaimer.included_items", {
                     returnObjects: true,
@@ -70,10 +70,10 @@ export function Disclaimer() {
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/80">
+              <h4 className="font-bold text-xs uppercase tracking-widest text-primary/80">
                 {t("disclaimer.not_included_title")}
               </h4>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4 marker:text-primary/50 text-[10px]">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 list-disc pl-4 marker:text-primary/50 text-xs">
                 {(
                   t("disclaimer.not_included_items", {
                     returnObjects: true,
@@ -84,7 +84,7 @@ export function Disclaimer() {
               </ul>
             </div>
 
-            <p className="text-[10px]">
+            <p className="text-xs">
               <Trans
                 i18nKey="disclaimer.accuracy"
                 components={[
@@ -93,7 +93,7 @@ export function Disclaimer() {
               />
             </p>
 
-            <p className="text-[10px]">
+            <p className="text-xs">
               <Trans
                 i18nKey="disclaimer.use_case"
                 components={[
