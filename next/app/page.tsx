@@ -54,7 +54,7 @@ function MetricHelp({ metric }: { metric: MetricKey }) {
   return (
     <Dialog>
       <DialogTrigger
-        className="ml-1.5 inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
+        className="inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
         aria-label={t("metric_help_aria", { title })}
       >
         <HelpCircle className="w-3 h-3" />
@@ -315,7 +315,7 @@ export default function Home() {
         </DropdownMenu>
       </div>
 
-      <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90">
+      <h1 className="mb-6 mt-14 text-center text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90 sm:mt-0 sm:text-left">
         <span className="text-[#ff5023]">A</span>PI{" "}
         <span className="text-[#ff5023]">P</span>rotocol{" "}
         <span className="text-[#ff5023]">O</span>verhead{" "}
@@ -532,42 +532,52 @@ export default function Home() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border/40">
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground first:pl-0 last:pr-0">
                     {t("protocol")}
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
+                    <div className="flex items-center justify-end gap-1">
                       <BarChart3 className="w-3 h-3" />
-                      {t("bandwidth")}
-                      <MetricHelp metric="bandwidth" />
+                      <span className="flex items-center gap-0.5">
+                        {t("bandwidth")}
+                        <MetricHelp metric="bandwidth" />
+                      </span>
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
+                    <div className="flex items-center justify-end gap-1">
                       <Cpu className="w-3 h-3" />
-                      {t("cpu_cores")}
-                      <MetricHelp metric="cpuCores" />
+                      <span className="flex items-center gap-0.5">
+                        {t("cpu_cores")}
+                        <MetricHelp metric="cpuCores" />
+                      </span>
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
+                    <div className="flex items-center justify-end gap-1">
                       <HardDrive className="w-3 h-3" />
-                      {t("ram")}
-                      <MetricHelp metric="ram" />
+                      <span className="flex items-center gap-0.5">
+                        {t("ram")}
+                        <MetricHelp metric="ram" />
+                      </span>
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
+                    <div className="flex items-center justify-end gap-1">
                       <Activity className="w-3 h-3" />
-                      {t("latency")}
-                      <MetricHelp metric="latency" />
+                      <span className="flex items-center gap-0.5">
+                        {t("latency")}
+                        <MetricHelp metric="latency" />
+                      </span>
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
+                    <div className="flex items-center justify-end gap-1">
                       <Activity className="w-3 h-3" />
-                      {t("cpu_util")}
-                      <MetricHelp metric="utilization" />
+                      <span className="flex items-center gap-0.5">
+                        {t("cpu_util")}
+                        <MetricHelp metric="utilization" />
+                      </span>
                     </div>
                   </th>
                 </tr>
@@ -578,27 +588,27 @@ export default function Home() {
                     key={res.protocol}
                     className="group hover:bg-primary/5 transition-colors"
                   >
-                    <td className="py-4 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                    <td className="px-4 py-4 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary first:pl-0 last:pr-0">
                       {res.protocol}
                     </td>
-                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                    <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
                       {res.metrics.bandwidthMbps.toLocaleString()}
                       <span className="ml-1 text-[10px] text-muted-foreground uppercase">
                         Mbps
                       </span>
                     </td>
-                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                    <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
                       {res.metrics.cpuCores}
                       <span className="ml-1 text-[10px] text-muted-foreground uppercase">
                         vCPU
                       </span>
                     </td>
-                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                    <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
                       {res.metrics.ramMb < 1024
                         ? `${res.metrics.ramMb} MB`
                         : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`}
                     </td>
-                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                    <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
                       <span
                         className={`${
                           res.metrics.latencyMs > 50
@@ -612,7 +622,7 @@ export default function Home() {
                         ms
                       </span>
                     </td>
-                    <td className="py-4 text-sm font-medium text-right tabular-nums text-foreground/80">
+                    <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-12 h-1 bg-muted/30 rounded-full overflow-hidden hidden sm:block">
                           <div
@@ -689,8 +699,8 @@ export default function Home() {
               <Star className="w-3 h-3 transition-transform group-hover:scale-125 fill-current" />
             </a>
           </div>
-          <div className="flex items-center gap-2">
-            <span>{t("footer.check")}</span>
+          <div className="block text-center leading-loose">
+            <span>{t("footer.check")} </span>
             <a
               href="https://testtrain.io"
               target="_blank"
