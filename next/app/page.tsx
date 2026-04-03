@@ -273,29 +273,40 @@ export default function Home() {
     setDownloadingPdf(true);
 
     try {
-      // Load font to support Cyrillic characters
-      const fontResponse = await fetch("/fonts/Roboto-Regular.ttf");
-      const fontBlob = await fontResponse.blob();
-      const fontBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === "string") {
-            resolve(reader.result.split(",")[1]);
-          } else {
-            reject(new Error("Failed to read font"));
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(fontBlob);
-      });
+      // Load fonts to support Cyrillic characters and bold styling
+      const fetchFont = async (url: string) => {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === "string") {
+              resolve(reader.result.split(",")[1]);
+            } else {
+              reject(new Error(`Failed to read font: ${url}`));
+            }
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      const [fontRegular, fontBold] = await Promise.all([
+        fetchFont("/fonts/Roboto-Regular.ttf"),
+        fetchFont("/fonts/Roboto-Bold.ttf"),
+      ]);
 
       // Allow UI to update before blocking main thread
       setTimeout(() => {
         try {
           const doc = new jsPDF();
 
-          doc.addFileToVFS("Roboto-Regular.ttf", fontBase64);
+          doc.addFileToVFS("Roboto-Regular.ttf", fontRegular);
           doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+
+          doc.addFileToVFS("Roboto-Bold.ttf", fontBold);
+          doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+
           doc.setFont("Roboto");
 
           const fwConfig = FRAMEWORK_CONFIGS[framework];
