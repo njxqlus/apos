@@ -190,6 +190,8 @@ export default function Home() {
     React.useState<ArchitectureTier>("Managed_Runtime");
   const [copied, setCopied] = React.useState(false);
 
+  const currentLangId = i18n.resolvedLanguage || i18n.language || "en";
+
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
   };
@@ -267,60 +269,64 @@ export default function Home() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 font-mono transition-colors duration-500">
-      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
-        <ThemeToggle />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group",
-            )}
-          >
-            <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-            {i18n.language.toUpperCase()}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-44 border-border/50 bg-card/95 backdrop-blur-xl p-1.5 shadow-2xl"
-          >
-            {[
-              { id: "en", label: "English" },
-              { id: "es", label: "Español" },
-              { id: "ru", label: "Русский" },
-            ].map((lang) => (
-              <DropdownMenuItem
-                key={lang.id}
-                onClick={() => changeLanguage(lang.id)}
-                className={`flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-all duration-200 ${
-                  i18n.language === lang.id
-                    ? "bg-primary/20 text-primary font-bold shadow-xs"
-                    : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold tracking-tight uppercase">
-                    {lang.label}
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-x-hidden bg-background p-4 sm:p-6 font-mono transition-colors duration-500">
+      {/* Header Bar - Title & Switchers on same line */}
+      <div className="w-full max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-6 mb-8 mt-4 sm:mt-0">
+        <h1 className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground/90 text-center sm:text-left transition-all sm:pl-2">
+          <span className="text-[#ff5023]">A</span>PI{" "}
+          <span className="text-[#ff5023]">P</span>rotocol{" "}
+          <span className="text-[#ff5023]">O</span>verhead{" "}
+          <span className="text-[#ff5023]">S</span>imulator
+        </h1>
+
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "flex items-center gap-2 border-border/50 bg-card/90 text-[10px] font-bold tracking-widest uppercase hover:border-primary/50 group",
+              )}
+            >
+              <Languages className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+              {currentLangId.toUpperCase()}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-44 border-border/50 bg-card/95 backdrop-blur-xl p-1.5 shadow-2xl"
+            >
+              {[
+                { id: "en", label: "English" },
+                { id: "es", label: "Español" },
+                { id: "ru", label: "Русский" },
+              ].map((lang) => (
+                <DropdownMenuItem
+                  key={lang.id}
+                  onClick={() => changeLanguage(lang.id)}
+                  className={`flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-all duration-200 ${
+                    currentLangId === lang.id
+                      ? "bg-primary/20 text-primary shadow-xs"
+                      : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold tracking-tight uppercase">
+                      {lang.label}
+                    </span>
+                    {currentLangId === lang.id && (
+                      <Check className="w-3 h-3 text-primary" />
+                    )}
+                  </div>
+                  <span className="text-[9px] font-mono opacity-40">
+                    {lang.id.toUpperCase()}
                   </span>
-                  {i18n.language === lang.id && (
-                    <Check className="w-3 h-3 text-primary" />
-                  )}
-                </div>
-                <span className="text-[9px] font-mono opacity-40">
-                  {lang.id.toUpperCase()}
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <h1 className="mb-6 mt-14 text-center text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90 sm:mt-0 sm:text-left">
-        <span className="text-[#ff5023]">A</span>PI{" "}
-        <span className="text-[#ff5023]">P</span>rotocol{" "}
-        <span className="text-[#ff5023]">O</span>verhead{" "}
-        <span className="text-[#ff5023]">S</span>imulator
-      </h1>
       <Disclaimer />
 
       <Card className="relative w-full max-w-6xl border-border/50 bg-card/95 shadow-2xl transition-colors hover:border-primary/50">
