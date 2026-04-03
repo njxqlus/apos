@@ -54,7 +54,7 @@ function MetricHelp({ metric }: { metric: MetricKey }) {
   return (
     <Dialog>
       <DialogTrigger
-        className="ml-1.5 inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
+        className="inline-flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-primary transition-colors focus:outline-none p-0.5"
         aria-label={t("metric_help_aria", { title })}
       >
         <HelpCircle className="w-3 h-3" />
@@ -536,38 +536,48 @@ export default function Home() {
                     {t("protocol")}
                   </th>
                   <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-1">
                       <BarChart3 className="w-3 h-3" />
-                      {t("bandwidth")}
-                      <MetricHelp metric="bandwidth" />
+                      <span className="flex items-center gap-0.5">
+                        {t("bandwidth")}
+                        <MetricHelp metric="bandwidth" />
+                      </span>
                     </div>
                   </th>
                   <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-1">
                       <Cpu className="w-3 h-3" />
-                      {t("cpu_cores")}
-                      <MetricHelp metric="cpuCores" />
+                      <span className="flex items-center gap-0.5">
+                        {t("cpu_cores")}
+                        <MetricHelp metric="cpuCores" />
+                      </span>
                     </div>
                   </th>
                   <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-1">
                       <HardDrive className="w-3 h-3" />
-                      {t("ram")}
-                      <MetricHelp metric="ram" />
+                      <span className="flex items-center gap-0.5">
+                        {t("ram")}
+                        <MetricHelp metric="ram" />
+                      </span>
                     </div>
                   </th>
                   <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-1">
                       <Activity className="w-3 h-3" />
-                      {t("latency")}
-                      <MetricHelp metric="latency" />
+                      <span className="flex items-center gap-0.5">
+                        {t("latency")}
+                        <MetricHelp metric="latency" />
+                      </span>
                     </div>
                   </th>
                   <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-1">
                       <Activity className="w-3 h-3" />
-                      {t("cpu_util")}
-                      <MetricHelp metric="utilization" />
+                      <span className="flex items-center gap-0.5">
+                        {t("cpu_util")}
+                        <MetricHelp metric="utilization" />
+                      </span>
                     </div>
                   </th>
                 </tr>

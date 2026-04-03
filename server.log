@@ -2,6 +2,6 @@ $ bun --bun next start
 ▲ Next.js 16.2.2
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 505ms
+✓ Ready in 356ms
 error: "next" exited with code 143
 error: script "start" exited with code 143
