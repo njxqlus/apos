@@ -269,95 +269,121 @@ export default function Home() {
     });
   };
 
-  const exportAsPDF = () => {
+  const exportAsPDF = async () => {
     setDownloadingPdf(true);
 
-    // Allow UI to update before blocking main thread
-    setTimeout(() => {
-      try {
-        const doc = new jsPDF();
-        const fwConfig = FRAMEWORK_CONFIGS[framework];
-        const efficiency =
-          (fwConfig.cpuEfficiencyMultiplier * 100).toFixed(0) + "%";
+    try {
+      // Load font to support Cyrillic characters
+      const fontResponse = await fetch("/fonts/Roboto-Regular.ttf");
+      const fontBlob = await fontResponse.blob();
+      const fontBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result.split(",")[1]);
+          } else {
+            reject(new Error("Failed to read font"));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(fontBlob);
+      });
 
-        // Add Title
-        doc.setFontSize(16);
-        doc.text("APOS: API Protocol Overhead Simulator - Report", 14, 20);
+      // Allow UI to update before blocking main thread
+      setTimeout(() => {
+        try {
+          const doc = new jsPDF();
 
-        // Add Configuration Section
-        doc.setFontSize(12);
-        doc.text(t("configuration"), 14, 32);
+          doc.addFileToVFS("Roboto-Regular.ttf", fontBase64);
+          doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+          doc.setFont("Roboto");
 
-        doc.setFontSize(10);
-        const startY = 40;
-        const lineHeight = 6;
+          const fwConfig = FRAMEWORK_CONFIGS[framework];
+          const efficiency =
+            (fwConfig.cpuEfficiencyMultiplier * 100).toFixed(0) + "%";
 
-        const configLines = [
-          `${t("summary_framework")}: ${t(framework)}`,
-          `${t("summary_efficiency")}: ${efficiency}`,
-          `${t("summary_ram_penalty")}: ${fwConfig.baseRamPenaltyMb} MB`,
-          `${t("summary_workload")}: ${rps.toLocaleString()} RPS`,
-          `${t("summary_payload")}: ${
-            payloadSize < 1024
-              ? `${payloadSize} B`
-              : payloadSize < 1048576
-                ? `${(payloadSize / 1024).toFixed(1)} KB`
-                : `${(payloadSize / 1048576).toFixed(1)} MB`
-          }`,
-        ];
+          // Add Title
+          doc.setFontSize(16);
+          doc.text("APOS: API Protocol Overhead Simulator - Report", 14, 20);
 
-        configLines.forEach((line, index) => {
-          doc.text(`\u2022 ${line}`, 14, startY + index * lineHeight);
-        });
+          // Add Configuration Section
+          doc.setFontSize(12);
+          doc.text(t("configuration"), 14, 32);
 
-        const tableStartY = startY + configLines.length * lineHeight + 10;
+          doc.setFontSize(10);
+          const startY = 40;
+          const lineHeight = 6;
 
-        // Add Table Section
-        doc.setFontSize(12);
-        doc.text(t("estimation"), 14, tableStartY);
-
-        const tableData = results.map((res) => {
-          const ram =
-            res.metrics.ramMb < 1024
-              ? `${res.metrics.ramMb} MB`
-              : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`;
-          const util = (res.metrics.utilization * 100).toFixed(0) + "%";
-
-          return [
-            res.protocol,
-            res.metrics.bandwidthMbps.toLocaleString(),
-            res.metrics.cpuCores.toString(),
-            ram,
-            res.metrics.latencyMs.toString(),
-            util,
+          const configLines = [
+            `${t("summary_framework")}: ${t(framework)}`,
+            `${t("summary_efficiency")}: ${efficiency}`,
+            `${t("summary_ram_penalty")}: ${fwConfig.baseRamPenaltyMb} MB`,
+            `${t("summary_workload")}: ${rps.toLocaleString()} RPS`,
+            `${t("summary_payload")}: ${
+              payloadSize < 1024
+                ? `${payloadSize} B`
+                : payloadSize < 1048576
+                  ? `${(payloadSize / 1024).toFixed(1)} KB`
+                  : `${(payloadSize / 1048576).toFixed(1)} MB`
+            }`,
           ];
-        });
 
-        autoTable(doc, {
-          startY: tableStartY + 6,
-          head: [
-            [
-              t("protocol"),
-              `${t("bandwidth")} (Mbps)`,
-              `${t("cpu_cores")} (vCPU)`,
-              t("ram"),
-              `${t("latency")} (ms)`,
-              `${t("cpu_util")} (%)`,
+          configLines.forEach((line, index) => {
+            doc.text(`\u2022 ${line}`, 14, startY + index * lineHeight);
+          });
+
+          const tableStartY = startY + configLines.length * lineHeight + 10;
+
+          // Add Table Section
+          doc.setFontSize(12);
+          doc.text(t("estimation"), 14, tableStartY);
+
+          const tableData = results.map((res) => {
+            const ram =
+              res.metrics.ramMb < 1024
+                ? `${res.metrics.ramMb} MB`
+                : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`;
+            const util = (res.metrics.utilization * 100).toFixed(0) + "%";
+
+            return [
+              res.protocol,
+              res.metrics.bandwidthMbps.toLocaleString(),
+              res.metrics.cpuCores.toString(),
+              ram,
+              res.metrics.latencyMs.toString(),
+              util,
+            ];
+          });
+
+          autoTable(doc, {
+            startY: tableStartY + 6,
+            head: [
+              [
+                t("protocol"),
+                `${t("bandwidth")} (Mbps)`,
+                `${t("cpu_cores")} (vCPU)`,
+                t("ram"),
+                `${t("latency")} (ms)`,
+                `${t("cpu_util")} (%)`,
+              ],
             ],
-          ],
-          body: tableData,
-          theme: "grid",
-          headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-          styles: { fontSize: 9, cellPadding: 3 },
-        });
+            body: tableData,
+            theme: "grid",
+            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+            styles: { fontSize: 9, cellPadding: 3, font: "Roboto" },
+          });
 
-        doc.save("apos-report.pdf");
-      } catch (err) {
-        console.error("Failed to generate PDF", err);
-      } finally {
-        setDownloadingPdf(false);
-      }
-    }, 50);
+          doc.save("apos-report.pdf");
+        } catch (err) {
+          console.error("Failed to generate PDF", err);
+        } finally {
+          setDownloadingPdf(false);
+        }
+      }, 50);
+    } catch (err) {
+      console.error("Failed to load font", err);
+      setDownloadingPdf(false);
+    }
   };
 
   return (
