@@ -315,7 +315,7 @@ export default function Home() {
         </DropdownMenu>
       </div>
 
-      <h1 className="mb-6 text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90">
+      <h1 className="mb-6 mt-14 text-center text-[12px] font-black uppercase tracking-[0.3em] text-muted-foreground/90 sm:mt-0 sm:text-left">
         <span className="text-[#ff5023]">A</span>PI{" "}
         <span className="text-[#ff5023]">P</span>rotocol{" "}
         <span className="text-[#ff5023]">O</span>verhead{" "}
@@ -532,38 +532,38 @@ export default function Home() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border/40">
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <th className="whitespace-nowrap pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                     {t("protocol")}
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                  <th className="whitespace-nowrap pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <BarChart3 className="w-3 h-3" />
                       {t("bandwidth")}
                       <MetricHelp metric="bandwidth" />
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                  <th className="whitespace-nowrap pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Cpu className="w-3 h-3" />
                       {t("cpu_cores")}
                       <MetricHelp metric="cpuCores" />
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                  <th className="whitespace-nowrap pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <HardDrive className="w-3 h-3" />
                       {t("ram")}
                       <MetricHelp metric="ram" />
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                  <th className="whitespace-nowrap pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Activity className="w-3 h-3" />
                       {t("latency")}
                       <MetricHelp metric="latency" />
                     </div>
                   </th>
-                  <th className="pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
+                  <th className="whitespace-nowrap pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Activity className="w-3 h-3" />
                       {t("cpu_util")}
@@ -689,8 +689,8 @@ export default function Home() {
               <Star className="w-3 h-3 transition-transform group-hover:scale-125 fill-current" />
             </a>
           </div>
-          <div className="flex items-center gap-2">
-            <span>{t("footer.check")}</span>
+          <div className="block text-center leading-loose">
+            <span>{t("footer.check")} </span>
             <a
               href="https://testtrain.io"
               target="_blank"
