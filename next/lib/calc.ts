@@ -1,4 +1,4 @@
-export type Protocol = "REST" | "gRPC" | "UDP" | "Kafka" | "AMQP";
+export type Protocol = "REST" | "gRPC" | "UDP" | "Kafka" | "AMQP" | "QUIC";
 export type ArchitectureTier =
   | "Native_Performance"
   | "Managed_Runtime"
@@ -72,6 +72,16 @@ export const PROTOCOL_CONFIGS: Record<Protocol, ProtocolConfig> = {
     baseRamMb: 1024,
     memoryFactor: 1.25,
     isStateful: true,
+  },
+  QUIC: {
+    overheadBytes: 45,
+    maxRpsPerCore: 32000,
+    processingLatencyMs: 2,
+    cpuPayloadPenalty: 0.96,
+    memoryBandwidthGbps: 1.8,
+    baseRamMb: 160,
+    memoryFactor: 1.1,
+    isStateful: false,
   },
 };
 

@@ -241,7 +241,7 @@ export default function Home() {
             ? `${res.metrics.ramMb} MB`
             : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`;
         const util = (res.metrics.utilization * 100).toFixed(0) + "%";
-        return `| ${res.protocol} | ${res.metrics.bandwidthMbps.toLocaleString()} | ${res.metrics.cpuCores} | ${ram} | ${res.metrics.latencyMs} | ${util} |`;
+        return `| ${t(res.protocol)} | ${res.metrics.bandwidthMbps.toLocaleString()} | ${res.metrics.cpuCores} | ${ram} | ${res.metrics.latencyMs} | ${util} |`;
       })
       .join("\n");
 
@@ -359,7 +359,7 @@ export default function Home() {
             const util = (res.metrics.utilization * 100).toFixed(0) + "%";
 
             return [
-              res.protocol,
+              t(res.protocol),
               res.metrics.bandwidthMbps.toLocaleString(),
               res.metrics.cpuCores.toString(),
               ram,
@@ -726,7 +726,7 @@ export default function Home() {
                     className="group hover:bg-primary/5 transition-colors"
                   >
                     <td className="px-4 py-4 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary first:pl-0 last:pr-0">
-                      {res.protocol}
+                      {t(res.protocol)}
                     </td>
                     <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
                       {res.metrics.bandwidthMbps.toLocaleString()}
