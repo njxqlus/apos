@@ -28,7 +28,7 @@ export const PROTOCOL_CONFIGS: Record<Protocol, ProtocolConfig> = {
     maxRpsPerCore: 8000,
     processingLatencyMs: 5,
     cpuPayloadPenalty: 0.95,
-    memoryBandwidthGbps: 1.0,
+    memoryBandwidthGbps: 2.0,
     baseRamMb: 128,
     memoryFactor: 1.1,
     isStateful: false,
@@ -106,6 +106,8 @@ export const FRAMEWORK_CONFIGS: Record<ArchitectureTier, FrameworkConfig> = {
   },
 };
 
+const TARGET_UTILIZATION = 0.7;
+
 export function calculateMetrics(
   protocol: Protocol,
   frameworkType: ArchitectureTier,
@@ -132,7 +134,7 @@ export function calculateMetrics(
 
   // 3. CPU (Cores) - Memory Bandwidth Limited Model
   const segments = Math.ceil(payloadBytes / 1440);
-  const reassemblyTax = segments > 1 ? 1 + segments * 0.12 : 1;
+  const reassemblyTax = segments > 1 ? Math.min(1 + segments * 0.12, 3.0) : 1;
 
   const frameworkEfficiency = config.isStateful
     ? Math.max(0.85, framework.cpuEfficiencyMultiplier)
@@ -156,16 +158,23 @@ export function calculateMetrics(
     maxRps = Math.min(maxRps, memBoundRps);
   }
 
-  const cpuCores = Math.ceil(rps / Math.max(maxRps, 10));
-  const utilization = rps / (cpuCores * maxRps);
+  // Calculate Fractional Cores for Provisioning (UI)
+  const idealCores = rps / Math.max(maxRps, 10);
+  const cpuCores = Number((idealCores / TARGET_UTILIZATION).toFixed(2));
+
+  // Calculate Physical Utilization to drive non-linear latency penalties
+  // This represents the load on the nearest integer number of physical cores
+  const physicalCores = Math.ceil(idealCores);
+  const actualUtilization = idealCores / Math.max(physicalCores, 1);
 
   // 4. Latency (ms)
   const frameworkLat = framework.latencyPenaltyMs;
   let latencyMs =
     networkRttMs + config.processingLatencyMs + frameworkLat + tlsLatency;
 
-  if (utilization > 0.7) {
-    latencyMs += Math.pow(utilization - 0.7, 2) * 200;
+  // Non-linear latency penalty based on actual physical core utilization
+  if (actualUtilization > 0.7) {
+    latencyMs += Math.pow(actualUtilization - 0.7, 2) * 500;
   }
 
   // 5. RAM (MB) - Advanced Heap Expansion Model
@@ -213,11 +222,10 @@ export function calculateMetrics(
   }
 
   return {
-    bandwidthMbps: Number(bandwidthMbps.toFixed(2)),
+    bandwidthMbps: Math.round(bandwidthMbps),
     cpuCores,
     ramMb: Math.ceil(ramMb),
     latencyMs: Math.round(latencyMs),
-    utilization: Number(utilization.toFixed(2)),
     isReliable,
     warning,
   };

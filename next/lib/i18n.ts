@@ -23,10 +23,9 @@ const resources = {
       AMQP: "AMQP",
       QUIC: "QUIC",
       bandwidth: "Bandwidth",
-      cpu_cores: "CPU Cores",
+      cpu_cores: "vCPUs",
       ram: "RAM",
       latency: "Latency",
-      cpu_util: "CPU Util",
       Native_Performance: "Native / Compiled",
       Managed_Runtime: "Managed / JIT",
       Enterprise_Abstraction: "Enterprise / Abstracted",
@@ -66,7 +65,7 @@ const resources = {
         included_title: "What is included in the model:",
         included_items: [
           "Network bandwidth based on payload + protocol overhead + TLS framing",
-          "CPU cores based on protocol efficiency, framework tier, and payload size penalty",
+          "vCPUs (fractional) based on a 70% production-safe utilization target",
           "RAM based on concurrency (Little's Law) + per-request buffers + framework baseline",
           "Latency based on RTT + TLS handshake + protocol processing + framework overhead",
           "Utilization-based latency growth at high load",
@@ -82,7 +81,7 @@ const resources = {
           "Burst traffic and autoscaling behavior",
         ],
         accuracy:
-          "<0>Accuracy:</0> estimates are within ±15–20% for typical workloads (1KB–10KB payload, up to 100k RPS). Accuracy degrades at extreme combinations of high RPS and large payloads (100k RPS × 100KB+) where memory bandwidth becomes the bottleneck and the model may overestimate CPU requirements.",
+          "<0>Accuracy:</0> Estimates are within ±15–20% for typical workloads. At extreme combinations of high RPS and large payloads (100KB+), the model correctly accounts for <1>Physical Memory Bandwidth</1> as the primary bottleneck, where protocol-specific parsing differences converge as the memory bus saturates.",
         use_case:
           "<0>Use this tool for:</0> initial capacity planning, architecture trade-off comparisons, and protocol selection. Do not use as a substitute for load testing.",
       },
@@ -95,7 +94,7 @@ const resources = {
         cpuCores: {
           title: "CPU Cores",
           description:
-            "The estimated number of virtual CPU cores (vCPUs) required to process the workload. This takes into account protocol-specific parsing efficiency and a penalty for larger payloads that require more processing time per byte.",
+            "The estimated number of fractional virtual CPU cores (vCPUs) required to process the workload while maintaining a healthy 70% utilization target (standard production headroom). This accounts for protocol parsing efficiency and payload complexity.",
         },
         ram: {
           title: "Memory Allocation",
@@ -106,11 +105,6 @@ const resources = {
           title: "Network Latency",
           description:
             "The projected end-to-end response time. This includes network round-trip time (RTT, 30 ms), protocol internal processing latency, and additional queuing delays that occur when CPU utilization exceeds 70%.",
-        },
-        utilization: {
-          title: "CPU Utilization",
-          description:
-            "The average processor load across all allocated cores. Maintaining utilization below 70-80% is recommended to prevent 'tail latency' spikes where queuing delays cause unpredictable slow responses.",
         },
       },
       footer: {
@@ -141,10 +135,9 @@ const resources = {
       AMQP: "AMQP",
       QUIC: "QUIC",
       bandwidth: "Ancho de Banda",
-      cpu_cores: "Núcleos de CPU",
+      cpu_cores: "vCPUs",
       ram: "RAM",
       latency: "Latencia",
-      cpu_util: "Uso de CPU",
       Native_Performance: "Nativo / Compilado",
       Managed_Runtime: "Gestionado / JIT",
       Enterprise_Abstraction: "Empresarial / Abstraído",
@@ -184,7 +177,7 @@ const resources = {
         included_title: "Lo que se incluye en el modelo:",
         included_items: [
           "Ancho de banda de red basado en carga útil + sobrecarga de protocolo + tramas TLS",
-          "Núcleos de CPU basados en la eficiencia del protocolo, el nivel del entorno y la penalización por tamaño de carga",
+          "vCPUs (fraccionarios) basados en un objetivo de utilización del 70% (producción segura)",
           "RAM basada en la concurrencia (Ley de Little) + búferes por solicitud + base del entorno",
           "Latencia basada en RTT + saludo TLS + procesamiento de protocolo + sobrecarga del entorno",
           "Crecimiento de latencia basado en el uso con cargas altas",
@@ -200,7 +193,7 @@ const resources = {
           "Tráfico en ráfagas y comportamiento de autoescalado",
         ],
         accuracy:
-          "<0>Precisión:</0> las estimaciones están dentro de un ±15–20% para cargas de trabajo típicas (carga de 1KB–10KB, hasta 100k RPS). La precisión se degrada en combinaciones extremas de alto RPS y cargas grandes (100k RPS × 100KB+) donde el ancho de banda de la memoria se convierte en el cuello de botella y el modelo puede sobreestimar los requisitos de CPU.",
+          "<0>Precisión:</0> Las estimaciones están dentro de un ±15-20% para cargas típicas. En casos extremos de alto RPS y cargas grandes (100KB+), el modelo considera correctamente el <1>ancho de banda de memoria física</1> como el cuello de botella principal, donde las diferencias de protocolo convergen al saturarse el bus de memoria.",
         use_case:
           "<1>Use esta herramienta para:</1> planificación inicial de capacidad, comparaciones de arquitectura y selección de protocolo. No utilizar como sustituto de las pruebas de carga.",
       },
@@ -213,7 +206,7 @@ const resources = {
         cpuCores: {
           title: "Núcleos de CPU",
           description:
-            "El número estimado de núcleos de CPU virtuales (vCPUs) requeridos para procesar la carga de trabajo. Esto tiene en cuenta la eficiencia de procesamiento específica del protocolo y una penalización para cargas más grandes que requieren más tiempo de procesamiento por byte.",
+            "El número estimado de núcleos vCPU fraccionarios necesarios para procesar la carga manteniendo un objetivo saludable del 70% de utilización (margen de seguridad estándar). Considera la eficiencia del protocolo y la complejidad de la carga.",
         },
         ram: {
           title: "Asignación de Memoria",
@@ -224,11 +217,6 @@ const resources = {
           title: "Latencia de Red",
           description:
             "El tiempo de respuesta proyectado de extremo a extremo. Esto incluye el tiempo de ida y vuelta de la red (RTT, 30 ms), la latencia de procesamiento interno del protocolo y los retrasos de cola adicionales que ocurren cuando el uso de la CPU supera el 70%.",
-        },
-        utilization: {
-          title: "Uso de CPU",
-          description:
-            "La carga promedio del procesador en todos los núcleos asignados. Se recomienda mantener el uso por debajo del 70-80% para evitar picos de 'latencia de cola' donde los retrasos de cola causan respuestas lentas impredecibles.",
         },
       },
       footer: {
@@ -259,10 +247,9 @@ const resources = {
       AMQP: "AMQP",
       QUIC: "QUIC",
       bandwidth: "Пропускная способность",
-      cpu_cores: "Ядра CPU",
+      cpu_cores: "vCPUs",
       ram: "ОЗУ",
       latency: "Задержка",
-      cpu_util: "Загрузка CPU",
       Native_Performance: "Native / Компилируемый",
       Managed_Runtime: "Managed / JIT",
       Enterprise_Abstraction: "Enterprise / Абстрагированный",
@@ -302,7 +289,7 @@ const resources = {
         included_title: "Что включено в модель:",
         included_items: [
           "Пропускная способность сети на основе полезной нагрузки + накладных расходов протокола + фрейминга TLS",
-          "Ядра CPU на основе эффективности протокола, уровня среды исполнения и штрафа за размер полезной нагрузки",
+          "vCPUs (дробные) на основе целевого показателя нагрузки 70% (безопасное производство)",
           "ОЗУ на основе конкурентности (закон Литтла) + буферы на каждый запрос + база среды исполнения",
           "Задержка на основе RTT + TLS handshake + обработка протокола + накладные расходы среды",
           "Рост задержки в зависимости от утилизации при высокой нагрузке",
@@ -318,7 +305,7 @@ const resources = {
           "Всплески трафика и поведение автомасштабирования",
         ],
         accuracy:
-          "<0>Точность:</0> оценки находятся в пределах ±15–20% для типичных нагрузок (полезная нагрузка 1КБ–10КБ, до 100k RPS). Точность снижается при экстремальных сочетаниях высокого RPS и больших нагрузок (100k RPS × 100КБ+), где пропускная способность памяти становится узким местом, и модель может завышать требования к CPU.",
+          "<0>Точность:</0> Оценки находятся в пределах ±15–20% для типичных нагрузок. При экстремальных сочетаниях высокого RPS и больших полезных нагрузок (100 КБ+), модель корректно учитывает <1>пропускную способность физической памяти</1> как основной фактор ограничения, где различия в протоколах нивелируются при насыщении шины памяти.",
         use_case:
           "<1>Используйте этот инструмент для:</1> первоначального планирования мощностей, сравнения архитектурных компромиссов и выбора протокола. Не используйте как замену нагрузочному тестированию.",
       },
@@ -331,7 +318,7 @@ const resources = {
         cpuCores: {
           title: "Ядра CPU",
           description:
-            "Оценочное количество виртуальных ядер CPU (vCPU), необходимых для обработки рабочей нагрузки. Учитывает эффективность парсинга протокола и штраф за большие нагрузки, требующие больше времени обработки на байт.",
+            "Оценочное количество дробных виртуальных ядер CPU (vCPU), необходимых для обработки нагрузки при поддержании целевой утилизации 70% (стандартный запас прочности). Учитывает эффективность парсинга протокола и сложность полезной нагрузки.",
         },
         ram: {
           title: "Распределение памяти",
@@ -342,11 +329,6 @@ const resources = {
           title: "Сетевая задержка",
           description:
             "Прогнозируемое конечное время ответа. Включает время кругового обхода сети (RTT, 30 мс), внутреннюю задержку обработки протокола и дополнительные задержки в очередях, возникающие при превышении загрузки CPU более 70%.",
-        },
-        utilization: {
-          title: "Загрузка CPU",
-          description:
-            "Средняя нагрузка процессора на все выделенные ядра. Рекомендуется поддерживать загрузку ниже 70-80% для предотвращения всплесков 'хвостовой задержки', когда задержки в очередях вызывают непредсказуемо медленные ответы.",
         },
       },
       footer: {

@@ -45,7 +45,7 @@ import {
   ArchitectureTier,
 } from "@/lib/calc";
 
-type MetricKey = "bandwidth" | "cpuCores" | "ram" | "latency" | "utilization";
+type MetricKey = "bandwidth" | "cpuCores" | "ram" | "latency";
 
 function MetricHelp({ metric }: { metric: MetricKey }) {
   const { t } = useTranslation();
@@ -232,16 +232,15 @@ export default function Home() {
   }, [rps, payloadSize, framework]);
 
   const copyAsMarkdown = () => {
-    const header = `| ${t("protocol")} | ${t("bandwidth")} (Mbps) | ${t("cpu_cores")} (vCPU) | ${t("ram")} | ${t("latency")} (ms) | ${t("cpu_util")} (%) |\n`;
-    const separator = "| :--- | ---: | ---: | ---: | ---: | ---: |\n";
+    const header = `| ${t("protocol")} | ${t("bandwidth")} (Mbps) | ${t("cpu_cores")} (vCPU) | ${t("ram")} | ${t("latency")} (ms) |\n`;
+    const separator = "| :--- | ---: | ---: | ---: | ---: |\n";
     const body = results
       .map((res) => {
         const ram =
           res.metrics.ramMb < 1024
             ? `${res.metrics.ramMb} MB`
             : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`;
-        const util = (res.metrics.utilization * 100).toFixed(0) + "%";
-        return `| ${t(res.protocol)} | ${res.metrics.bandwidthMbps.toLocaleString()} | ${res.metrics.cpuCores} | ${ram} | ${res.metrics.latencyMs} | ${util} |`;
+        return `| ${t(res.protocol)} | ${res.metrics.bandwidthMbps.toLocaleString()} | ${res.metrics.cpuCores.toFixed(2)} | ${ram} | ${res.metrics.latencyMs} |`;
       })
       .join("\n");
 
@@ -356,15 +355,13 @@ export default function Home() {
               res.metrics.ramMb < 1024
                 ? `${res.metrics.ramMb} MB`
                 : `${(res.metrics.ramMb / 1024).toFixed(1)} GB`;
-            const util = (res.metrics.utilization * 100).toFixed(0) + "%";
 
             return [
               t(res.protocol),
               res.metrics.bandwidthMbps.toLocaleString(),
-              res.metrics.cpuCores.toString(),
+              res.metrics.cpuCores.toFixed(2),
               ram,
               res.metrics.latencyMs.toString(),
-              util,
             ];
           });
 
@@ -377,7 +374,6 @@ export default function Home() {
                 `${t("cpu_cores")} (vCPU)`,
                 t("ram"),
                 `${t("latency")} (ms)`,
-                `${t("cpu_util")} (%)`,
               ],
             ],
             body: tableData,
@@ -708,15 +704,6 @@ export default function Home() {
                       </span>
                     </div>
                   </th>
-                  <th className="whitespace-nowrap px-4 pb-4 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right first:pl-0 last:pr-0">
-                    <div className="flex items-center justify-end gap-1">
-                      <Activity className="w-3 h-3" />
-                      <span className="flex items-center gap-0.5">
-                        {t("cpu_util")}
-                        <MetricHelp metric="utilization" />
-                      </span>
-                    </div>
-                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/20">
@@ -735,7 +722,7 @@ export default function Home() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
-                      {res.metrics.cpuCores}
+                      {res.metrics.cpuCores.toFixed(2)}
                       <span className="ml-1 text-[10px] text-muted-foreground uppercase">
                         vCPU
                       </span>
@@ -758,24 +745,6 @@ export default function Home() {
                       <span className="ml-1 text-[10px] text-muted-foreground uppercase">
                         ms
                       </span>
-                    </td>
-                    <td className="px-4 py-4 text-sm font-medium text-right tabular-nums text-foreground/80 first:pl-0 last:pr-0">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="w-12 h-1 bg-muted/30 rounded-full overflow-hidden hidden sm:block">
-                          <div
-                            className="h-full bg-primary transition-all"
-                            style={{
-                              width: `${res.metrics.utilization * 100}%`,
-                            }}
-                          />
-                        </div>
-                        <span>
-                          {(res.metrics.utilization * 100)
-                            .toFixed(0)
-                            .padStart(3, "\u00A0")}
-                          %
-                        </span>
-                      </div>
                     </td>
                   </tr>
                 ))}
