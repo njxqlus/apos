@@ -45,7 +45,7 @@
     "roboto-font": "^0.1.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.1"
+    "typescript-eslint": "^8.59.3"
   },
   "ignoreScripts": [
     "sharp",
